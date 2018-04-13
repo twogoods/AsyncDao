@@ -1,18 +1,41 @@
-import com.github.mauricio.async.db.QueryResult;
-import com.github.mauricio.async.db.RowData;
-import com.tg.async.mysql.ScalaUtils;
-import com.tg.async.mysql.VertxEventLoopExecutionContext;
+package com.tg.async;
+
+import com.tg.async.mapper.CommonDao;
+import com.tg.async.base.DataHandler;
+import com.tg.async.mapper.User;
+import com.tg.async.mysql.AsyncDaoFactory;
 import com.tg.async.mysql.pool.ConnectionPool;
 import com.tg.async.mysql.pool.PoolConfiguration;
 import io.vertx.core.Vertx;
-import scala.concurrent.Future;
-import scala.runtime.AbstractFunction1;
+import org.junit.Test;
+
+import java.util.List;
 
 /**
- * Created by twogoods on 2018/4/8.
+ * Created by twogoods on 2018/4/12.
  */
-public class Main {
-    public static void main(String[] args) {
+public class Base {
+
+
+    @Test
+    public void test() {
+        Vertx vertx = Vertx.vertx();
+        PoolConfiguration configuration = new PoolConfiguration("root", "localhost", 3306, "admin", "test");
+        AsyncDaoFactory asyncDaoFactory = AsyncDaoFactory.build(configuration);
+        CommonDao commonDao = asyncDaoFactory.getMapper(CommonDao.class);
+
+        commonDao.query(new User(), new DataHandler<List<User>>() {
+            @Override
+            public void handle(List<User> users) {
+                System.out.println(users);
+            }
+        });
+
+    }
+
+
+    @Test
+    public void base() {
         Vertx vertx = Vertx.vertx();
         PoolConfiguration configuration = new PoolConfiguration("root", "localhost", 3306, "admin", "test");
         ConnectionPool pool = new ConnectionPool(configuration, vertx);
@@ -51,4 +74,6 @@ public class Main {
             }
         });
     }
+
+
 }

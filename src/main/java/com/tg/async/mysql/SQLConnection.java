@@ -1,10 +1,9 @@
 package com.tg.async.mysql;
 
+import com.github.mauricio.async.db.ResultSet;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
-import io.vertx.ext.sql.*;
-
 import java.util.List;
 
 
@@ -16,8 +15,6 @@ public interface SQLConnection {
 
     SQLConnection callWithParams(String sql, JsonArray params, JsonArray outputs, Handler<AsyncResult<ResultSet>> resultHandler);
 
-    SQLConnection setOptions(SQLOptions options);
-
     SQLConnection setAutoCommit(boolean autoCommit, Handler<AsyncResult<Void>> handler);
 
     SQLConnection execute(String sql, Handler<AsyncResult<Void>> handler);
@@ -26,9 +23,9 @@ public interface SQLConnection {
 
     SQLConnection queryWithParams(String sql, JsonArray params, Handler<AsyncResult<ResultSet>> handler);
 
-    SQLConnection update(String sql, Handler<AsyncResult<UpdateResult>> handler);
+    SQLConnection update(String sql, Handler<AsyncResult<ResultSet>> handler);
 
-    SQLConnection updateWithParams(String sql, JsonArray params, Handler<AsyncResult<UpdateResult>> handler);
+    SQLConnection updateWithParams(String sql, JsonArray params, Handler<AsyncResult<ResultSet>> handler);
 
     void close(Handler<AsyncResult<Void>> handler);
 

@@ -1,9 +1,9 @@
 package com.tg.async.mysql.pool;
 
 import com.github.mauricio.async.db.Connection;
-import com.tg.async.mysql.AsyncSQLConnectionImpl;
 import com.tg.async.mysql.SQLConnection;
 import com.tg.async.mysql.ScalaUtils;
+import com.tg.async.mysql.AsyncSQLConnectionImpl;
 import com.tg.async.mysql.VertxEventLoopExecutionContext;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

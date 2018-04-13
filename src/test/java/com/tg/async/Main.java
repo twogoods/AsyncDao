@@ -1,4 +1,7 @@
-package com.tg.async.base;
+package com.tg.async;
+
+import com.tg.async.base.DataHandler;
+import com.tg.async.mapper.CommonDao;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -15,10 +18,13 @@ public class Main {
         for (Method method : methods) {
             System.out.println(Arrays.toString(method.getGenericParameterTypes()));
             System.out.println(Arrays.toString(method.getParameterTypes()));
+            System.out.println(method.getParameterTypes()[1].equals(DataHandler.class));
 
 
             System.out.println(method.getGenericParameterTypes()[1] instanceof ParameterizedType);
             Type t = method.getGenericParameterTypes()[1];
+
+
             Type[] handleTypes = ((ParameterizedType) t).getActualTypeArguments();
             System.out.println(handleTypes[0]);
             System.out.println(handleTypes[0] instanceof ParameterizedType);

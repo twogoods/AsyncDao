@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tg.test.UserMapper">
+  <resultMap id="BaseResultMap" type="com.tg.test.User">
+    <id column="id" property="id"/>
+    <result column="old_address" property="oldAddress"/>
+    <result column="created_at" property="createdAt"/>
+    <result column="password" property="password"/>
+    <result column="now_address" property="nowAddress"/>
+    <result column="state" property="state"/>
+    <result column="age" property="age"/>
+    <result column="username" property="username"/>
+    <result column="updated_at" property="updatedAt"/>
+  </resultMap>
+
+  <select id="queryUser" resultMap="BaseResultMap">select username,age from T_User 
+    <where>
+      <if test="name!=null and name!=''">AND username = #{name}</if>
+      <if test="age != null">OR age &gt; #{age}</if>
+    </where> order by id desc
+  </select>
+
+  <insert id="insert" parameterType="com.tg.test.User" useGeneratedKeys="true" keyProperty="id">insert into T_User
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="user.oldAddress != null">old_address,</if>
+      <if test="user.createdAt != null">created_at,</if>
+      <if test="user.password != null">password,</if>
+      <if test="user.nowAddress != null">now_address,</if>
+      <if test="user.state != null">state,</if>
+      <if test="user.age != null">age,</if>
+      <if test="user.username != null">username,</if>
+      <if test="user.updatedAt != null">updated_at,</if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="user.oldAddress != null">#{user.oldAddress},</if>
+      <if test="user.createdAt != null">#{user.createdAt},</if>
+      <if test="user.password != null">#{user.password},</if>
+      <if test="user.nowAddress != null">#{user.nowAddress},</if>
+      <if test="user.state != null">#{user.state},</if>
+      <if test="user.age != null">#{user.age},</if>
+      <if test="user.username != null">#{user.username},</if>
+      <if test="user.updatedAt != null">#{user.updatedAt},</if>
+    </trim>
+  </insert>
+
+
+</mapper>
