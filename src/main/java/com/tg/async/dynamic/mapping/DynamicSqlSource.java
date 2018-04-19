@@ -1,5 +1,6 @@
 package com.tg.async.dynamic.mapping;
 
+import com.tg.async.dynamic.xmltags.DynamicContext;
 import com.tg.async.dynamic.xmltags.SqlNode;
 
 import java.util.Map;
@@ -16,8 +17,13 @@ public class DynamicSqlSource implements SqlSource {
     }
 
     @Override
-    public void getBoundSql(Object parameterObject) {
-
+    public BoundSql getBoundSql(Object parameterObject) {
+        DynamicContext dynamicContext = new DynamicContext(parameterObject);
+        rootSqlNode.apply(dynamicContext);
+        BoundSql boundSql = new BoundSql();
+        boundSql.setSql(dynamicContext.getSql());
+        boundSql.setParameterObject(parameterObject);
+        return boundSql;
     }
 
 }

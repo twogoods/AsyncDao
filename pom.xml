@@ -36,6 +36,11 @@
             <version>${commomspool.version}</version>
         </dependency>
         <dependency>
+            <groupId>ognl</groupId>
+            <artifactId>ognl</artifactId>
+            <version>3.1.16</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.21</version>
@@ -89,7 +94,6 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>${java.encoding}</encoding>
-                    <compilerArgument>-proc:none</compilerArgument>
                 </configuration>
             </plugin>
         </plugins>

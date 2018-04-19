@@ -13,8 +13,8 @@ public class TrimSqlNode implements SqlNode {
     private final List<String> prefixesToOverride;
     private final List<String> suffixesToOverride;
 
-    public TrimSqlNode( SqlNode contents, String prefix, String prefixesToOverride, String suffix, String suffixesToOverride) {
-        this( contents, prefix, parseOverrides(prefixesToOverride), suffix, parseOverrides(suffixesToOverride));
+    public TrimSqlNode(SqlNode contents, String prefix, String prefixesToOverride, String suffix, String suffixesToOverride) {
+        this(contents, prefix, parseOverrides(prefixesToOverride), suffix, parseOverrides(suffixesToOverride));
     }
 
     protected TrimSqlNode(SqlNode contents, String prefix, List<String> prefixesToOverride, String suffix, List<String> suffixesToOverride) {
@@ -36,7 +36,7 @@ public class TrimSqlNode implements SqlNode {
     private static List<String> parseOverrides(String overrides) {
         if (overrides != null) {
             final StringTokenizer parser = new StringTokenizer(overrides, "|", false);
-            final List<String> list = new ArrayList<String>(parser.countTokens());
+            final List<String> list = new ArrayList<>(parser.countTokens());
             while (parser.hasMoreTokens()) {
                 list.add(parser.nextToken().toUpperCase(Locale.ENGLISH));
             }
@@ -67,7 +67,6 @@ public class TrimSqlNode implements SqlNode {
             }
             delegate.appendSql(sqlBuffer.toString());
         }
-
 
 
         @Override

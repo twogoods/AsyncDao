@@ -1,7 +1,6 @@
 package com.tg.async.dynamic.xml;
 
-import com.tg.async.dynamic.mapping.ResultMap;
-import com.tg.async.dynamic.mapping.ResultMapping;
+import com.tg.async.dynamic.mapping.*;
 import com.tg.async.dynamic.xmltags.*;
 import com.tg.async.exception.BuilderException;
 import org.w3c.dom.Node;
@@ -20,9 +19,9 @@ public class XMLMapperBuilder {
 
     private final XPathParser parser;
     private final String resource;
+    private final Map<String, NodeHandler> nodeHandlerMap = new HashMap<>();
 
-
-    private final Map<String, NodeHandler> nodeHandlerMap = new HashMap<String, NodeHandler>();
+    private String namespace;
 
 
     private void initNodeHandlerMap() {
@@ -31,10 +30,6 @@ public class XMLMapperBuilder {
         nodeHandlerMap.put("set", new SetHandler());
         nodeHandlerMap.put("foreach", new ForEachHandler());
         nodeHandlerMap.put("if", new IfHandler());
-        nodeHandlerMap.put("choose", new ChooseHandler());
-        nodeHandlerMap.put("when", new IfHandler());
-        nodeHandlerMap.put("otherwise", new OtherwiseHandler());
-        nodeHandlerMap.put("bind", new BindHandler());
     }
 
 
@@ -52,16 +47,10 @@ public class XMLMapperBuilder {
 
     private void configurationElement(XNode context) {
         try {
-            String namespace = context.getStringAttribute("namespace");
+            namespace = context.getStringAttribute("namespace");
             if (namespace == null || namespace.equals("")) {
                 throw new BuilderException("Mapper's namespace cannot be empty");
-
             }
-            //存namespace
-            //builderAssistant.setCurrentNamespace(namespace);
-
-            //TODO  parameterMap
-            //parameterMapElement(context.evalNodes("/mapper/parameterMap"));
             resultMapElements(context.evalNodes("/mapper/resultMap"));
             buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
         } catch (Exception e) {
@@ -71,19 +60,12 @@ public class XMLMapperBuilder {
 
 
     private void resultMapElements(List<XNode> list) throws Exception {
-        for (XNode resultMapNode : list) {
-            try {
-                resultMapElement(resultMapNode);
-            } catch (Exception e) {
-                // ignore, it will be retried
-            }
-        }
+        list.stream().forEach(this::resultMapElement);
     }
 
 
-    private ResultMap resultMapElement(XNode resultMapNode) throws Exception {
+    private void resultMapElement(XNode resultMapNode) {
         ResultMap resultMap = new ResultMap();
-
         String id = resultMapNode.getStringAttribute("id");
         String type = resultMapNode.getStringAttribute("type");
         resultMap.setId(id);
@@ -99,8 +81,7 @@ public class XMLMapperBuilder {
             }
         }
         resultMap.setResultMappings(resultMappings);
-        //TODO 如何存储
-        return resultMap;
+        MapperCache.addResultMap(buildKey(namespace, id), resultMap);
     }
 
 
@@ -111,12 +92,37 @@ public class XMLMapperBuilder {
 
 
     private void buildStatementFromContext(List<XNode> list) {
+        list.stream().forEach(this::parseStatement);
+    }
 
+
+    private void parseStatement(XNode node) {
+        //String parameterMap = node.getStringAttribute("parameterMap");
+        String parameterType = node.getStringAttribute("parameterType");
+        String resultType = node.getStringAttribute("resultType");
+        String resultMap = node.getStringAttribute("resultMap");
+
+        String mode = node.getName();
+        String id = node.getStringAttribute("id");
+        String useGeneratedKeys = node.getStringAttribute("useGeneratedKeys");
+        String keyProperty = node.getStringAttribute("keyProperty");
+
+        MixedSqlNode rootSqlNode = parseDynamicTags(node);
+
+        MappedStatement mappedStatement = new MappedStatement.Builder(id, new DynamicSqlSource(rootSqlNode), mode)
+                .keyGenerator(keyProperty)
+                .keyProperty(keyProperty)
+                .parameterType(parameterType)
+                .resultType(resultType)
+                .resultMap(resultMap)
+                .build();
+
+        MapperCache.addMappedStatement(buildKey(namespace, id), mappedStatement);
     }
 
 
     protected MixedSqlNode parseDynamicTags(XNode node) {
-        List<SqlNode> contents = new ArrayList<SqlNode>();
+        List<SqlNode> contents = new ArrayList<>();
         NodeList children = node.getNode().getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             XNode child = node.newXNode(children.item(i));
@@ -141,6 +147,11 @@ public class XMLMapperBuilder {
     }
 
 
+    private String buildKey(String namespace, String id) {
+        return namespace + "." + id;
+    }
+
+
     private interface NodeHandler {
         void handleNode(XNode nodeToHandle, List<SqlNode> targetContents);
     }
@@ -155,6 +166,67 @@ public class XMLMapperBuilder {
             MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
             WhereSqlNode where = new WhereSqlNode(mixedSqlNode);
             targetContents.add(where);
+        }
+    }
+
+
+    private class TrimHandler implements NodeHandler {
+        public TrimHandler() {
+        }
+
+        @Override
+        public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+            MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
+            String prefix = nodeToHandle.getStringAttribute("prefix");
+            String prefixOverrides = nodeToHandle.getStringAttribute("prefixOverrides");
+            String suffix = nodeToHandle.getStringAttribute("suffix");
+            String suffixOverrides = nodeToHandle.getStringAttribute("suffixOverrides");
+            TrimSqlNode trim = new TrimSqlNode(mixedSqlNode, prefix, prefixOverrides, suffix, suffixOverrides);
+            targetContents.add(trim);
+        }
+    }
+
+
+    private class SetHandler implements NodeHandler {
+        public SetHandler() {
+        }
+
+        @Override
+        public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+            MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
+            SetSqlNode set = new SetSqlNode(mixedSqlNode);
+            targetContents.add(set);
+        }
+    }
+
+    private class ForEachHandler implements NodeHandler {
+        public ForEachHandler() {
+        }
+
+        @Override
+        public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+            MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
+            String collection = nodeToHandle.getStringAttribute("collection");
+            String item = nodeToHandle.getStringAttribute("item");
+            String index = nodeToHandle.getStringAttribute("index");
+            String open = nodeToHandle.getStringAttribute("open");
+            String close = nodeToHandle.getStringAttribute("close");
+            String separator = nodeToHandle.getStringAttribute("separator");
+            ForEachSqlNode forEachSqlNode = new ForEachSqlNode(mixedSqlNode, collection, index, item, open, close, separator);
+            targetContents.add(forEachSqlNode);
+        }
+    }
+
+    private class IfHandler implements NodeHandler {
+        public IfHandler() {
+        }
+
+        @Override
+        public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+            MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
+            String test = nodeToHandle.getStringAttribute("test");
+            IfSqlNode ifSqlNode = new IfSqlNode(mixedSqlNode, test);
+            targetContents.add(ifSqlNode);
         }
     }
 

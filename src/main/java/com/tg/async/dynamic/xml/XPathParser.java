@@ -199,7 +199,6 @@ public class XPathParser {
         try {
             return xpath.evaluate(expression, root, returnType);
         } catch (Exception e) {
-            //TODO
             throw new BuilderException("Error evaluating XPath.  Cause: " + e, e);
         }
     }
