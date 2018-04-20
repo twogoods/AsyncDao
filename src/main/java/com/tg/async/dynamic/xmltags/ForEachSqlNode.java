@@ -113,6 +113,20 @@ public class ForEachSqlNode implements SqlNode {
             delegate.appendSql(parser.parse(sql));
         }
 
+        @Override
+        public void bind(String key, Object value) {
+            delegate.bind(key, value);
+        }
+
+        @Override
+        public Map<String, Object> getBindParam() {
+            return delegate.getBindParam();
+        }
+
+        @Override
+        public Object getParam() {
+            return delegate.getParam();
+        }
     }
 
 
@@ -129,6 +143,22 @@ public class ForEachSqlNode implements SqlNode {
 
         public boolean isPrefixApplied() {
             return prefixApplied;
+        }
+
+
+        @Override
+        public void bind(String key, Object value) {
+            delegate.bind(key, value);
+        }
+
+        @Override
+        public Map<String, Object> getBindParam() {
+            return delegate.getBindParam();
+        }
+
+        @Override
+        public Object getParam() {
+            return delegate.getParam();
         }
 
         @Override

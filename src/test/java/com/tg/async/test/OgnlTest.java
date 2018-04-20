@@ -16,7 +16,7 @@ public class OgnlTest {
     public void base() {
         Map<String, Object> param = new HashMap<>();
         param.put("name", "haha");
-        Object res = OgnlCache.getValue("name!=null and name!=''", param);
+        Object res = OgnlCache.getValue("test", param);
         System.out.println(res);
     }
 

@@ -20,9 +20,7 @@ public class XMLMapperBuilder {
     private final XPathParser parser;
     private final String resource;
     private final Map<String, NodeHandler> nodeHandlerMap = new HashMap<>();
-
     private String namespace;
-
 
     private void initNodeHandlerMap() {
         nodeHandlerMap.put("trim", new TrimHandler());
@@ -32,18 +30,15 @@ public class XMLMapperBuilder {
         nodeHandlerMap.put("if", new IfHandler());
     }
 
-
     public XMLMapperBuilder(InputStream inputStream, String resource) {
         this.parser = new XPathParser(inputStream);
         this.resource = resource;
         initNodeHandlerMap();
     }
 
-
     public void parse() {
         configurationElement(parser.evalNode("/mapper"));
     }
-
 
     private void configurationElement(XNode context) {
         try {
@@ -58,11 +53,9 @@ public class XMLMapperBuilder {
         }
     }
 
-
     private void resultMapElements(List<XNode> list) throws Exception {
         list.stream().forEach(this::resultMapElement);
     }
-
 
     private void resultMapElement(XNode resultMapNode) {
         ResultMap resultMap = new ResultMap();
@@ -70,7 +63,6 @@ public class XMLMapperBuilder {
         String type = resultMapNode.getStringAttribute("type");
         resultMap.setId(id);
         resultMap.setType(type);
-
         List<ResultMapping> resultMappings = new ArrayList<>();
         List<XNode> resultChildren = resultMapNode.getChildren();
         for (XNode resultChild : resultChildren) {
@@ -84,17 +76,14 @@ public class XMLMapperBuilder {
         MapperCache.addResultMap(buildKey(namespace, id), resultMap);
     }
 
-
     private ResultMapping buildResultMapping(XNode node) {
         return new ResultMapping(node.getStringAttribute("column"),
                 node.getStringAttribute("property"));
     }
 
-
     private void buildStatementFromContext(List<XNode> list) {
         list.stream().forEach(this::parseStatement);
     }
-
 
     private void parseStatement(XNode node) {
         //String parameterMap = node.getStringAttribute("parameterMap");
@@ -108,15 +97,13 @@ public class XMLMapperBuilder {
         String keyProperty = node.getStringAttribute("keyProperty");
 
         MixedSqlNode rootSqlNode = parseDynamicTags(node);
-
         MappedStatement mappedStatement = new MappedStatement.Builder(id, new DynamicSqlSource(rootSqlNode), mode)
-                .keyGenerator(keyProperty)
+                .keyGenerator(useGeneratedKeys)
                 .keyProperty(keyProperty)
                 .parameterType(parameterType)
                 .resultType(resultType)
                 .resultMap(resultMap)
                 .build();
-
         MapperCache.addMappedStatement(buildKey(namespace, id), mappedStatement);
     }
 
@@ -151,16 +138,13 @@ public class XMLMapperBuilder {
         return namespace + "." + id;
     }
 
-
     private interface NodeHandler {
         void handleNode(XNode nodeToHandle, List<SqlNode> targetContents);
     }
 
-
     private class WhereHandler implements NodeHandler {
         public WhereHandler() {
         }
-
         @Override
         public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
             MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);

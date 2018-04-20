@@ -13,10 +13,6 @@ public class TextSqlNode implements SqlNode {
         this.text = text;
     }
 
-
-    /*
-     <if test="name!=null and name!=''">AND username = #{name}</if>
-     */
     public boolean isDynamic() {
         DynamicCheckerTokenParser checker = new DynamicCheckerTokenParser();
         GenericTokenParser parser = createParser(checker);
@@ -31,13 +27,11 @@ public class TextSqlNode implements SqlNode {
         return true;
     }
 
-
     private GenericTokenParser createParser(TokenHandler handler) {
         return new GenericTokenParser("${", "}", handler);
     }
 
     private static class BindingTokenParser implements TokenHandler {
-
         private DynamicContext context;
 
         public BindingTokenParser(DynamicContext context) {
@@ -57,11 +51,9 @@ public class TextSqlNode implements SqlNode {
     }
 
     private static class DynamicCheckerTokenParser implements TokenHandler {
-
         private boolean isDynamic;
 
         public DynamicCheckerTokenParser() {
-            // Prevent Synthetic Access
         }
 
         public boolean isDynamic() {
@@ -74,6 +66,4 @@ public class TextSqlNode implements SqlNode {
             return null;
         }
     }
-
-
 }

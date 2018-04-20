@@ -75,6 +75,21 @@ public class TrimSqlNode implements SqlNode {
         }
 
 
+        @Override
+        public void bind(String key, Object value) {
+            delegate.bind(key, value);
+        }
+
+        @Override
+        public Map<String, Object> getBindParam() {
+            return delegate.getBindParam();
+        }
+
+        @Override
+        public Object getParam() {
+            return delegate.getParam();
+        }
+
         private void applyPrefix(StringBuilder sql, String trimmedUppercaseSql) {
             if (!prefixApplied) {
                 prefixApplied = true;

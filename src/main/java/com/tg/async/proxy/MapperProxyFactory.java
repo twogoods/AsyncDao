@@ -1,6 +1,9 @@
 package com.tg.async.proxy;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by twogoods on 2018/4/12.
@@ -8,6 +11,7 @@ import java.lang.reflect.Proxy;
 public class MapperProxyFactory<T> {
 
     private Class<T> mapperInterface;
+    private final Map<Method, MapperMethod> methodCache = new ConcurrentHashMap<Method, MapperMethod>();
 
     public MapperProxyFactory(Class<T> mapperInterface) {
         this.mapperInterface = mapperInterface;

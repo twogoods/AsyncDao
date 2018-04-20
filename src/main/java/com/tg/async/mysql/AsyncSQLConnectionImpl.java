@@ -31,16 +31,6 @@ public class AsyncSQLConnectionImpl implements SQLConnection {
     }
 
     @Override
-    public SQLConnection call(String sql, Handler<AsyncResult<ResultSet>> resultHandler) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public SQLConnection callWithParams(String sql, JsonArray params, JsonArray outputs, Handler<AsyncResult<ResultSet>> resultHandler) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
     public SQLConnection setAutoCommit(boolean autoCommit, Handler<AsyncResult<Void>> handler) {
         Future<Void> fut;
 
@@ -76,6 +66,22 @@ public class AsyncSQLConnectionImpl implements SQLConnection {
     }
 
     @Override
+    public SQLConnection executeWithParams(String sql, List params, Handler<AsyncResult<Void>> handler) {
+        beginTransactionIfNeeded(v -> {
+            final scala.concurrent.Future<QueryResult> future =connection.sendPreparedStatement(sql, ScalaUtils.toScalaList(params));
+            future.onComplete(ScalaUtils.toFunction1(ar -> {
+                if (ar.succeeded()) {
+                    handler.handle(Future.succeededFuture());
+                } else {
+                    handler.handle(Future.failedFuture(ar.cause()));
+                }
+            }), executionContext);
+        });
+
+        return this;
+    }
+
+    @Override
     public SQLConnection query(String sql, Handler<AsyncResult<ResultSet>> handler) {
         beginTransactionIfNeeded(v -> {
             final Future<QueryResult> future = ScalaUtils.scalaToVertx(connection.sendQuery(sql), executionContext);
@@ -86,10 +92,9 @@ public class AsyncSQLConnectionImpl implements SQLConnection {
     }
 
     @Override
-    public SQLConnection queryWithParams(String sql, JsonArray params, Handler<AsyncResult<ResultSet>> handler) {
+    public SQLConnection queryWithParams(String sql, List params, Handler<AsyncResult<ResultSet>> handler) {
         beginTransactionIfNeeded(v -> {
-            final scala.concurrent.Future<QueryResult> future = connection.sendPreparedStatement(sql,
-                    ScalaUtils.toScalaList(params.getList()));
+            final scala.concurrent.Future<QueryResult> future = connection.sendPreparedStatement(sql, ScalaUtils.toScalaList(params));
             future.onComplete(ScalaUtils.toFunction1(handleAsyncQueryResultToResultSet(handler)), executionContext);
         });
 
@@ -108,10 +113,10 @@ public class AsyncSQLConnectionImpl implements SQLConnection {
     }
 
     @Override
-    public SQLConnection updateWithParams(String sql, JsonArray params, Handler<AsyncResult<ResultSet>> handler) {
+    public SQLConnection updateWithParams(String sql, List params, Handler<AsyncResult<ResultSet>> handler) {
         beginTransactionIfNeeded(v -> {
             final scala.concurrent.Future<QueryResult> future = connection.sendPreparedStatement(sql,
-                    ScalaUtils.toScalaList(params.getList()));
+                    ScalaUtils.toScalaList(params));
             future.onComplete(ScalaUtils.toFunction1(handleAsyncUpdateResultToResultSet(handler)), executionContext);
         });
 
@@ -183,26 +188,6 @@ public class AsyncSQLConnectionImpl implements SQLConnection {
 
     @Override
     public SQLConnection getTransactionIsolation(Handler<AsyncResult<TransactionIsolation>> handler) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public SQLConnection batch(List<String> sqlStatements, Handler<AsyncResult<List<Integer>>> handler) {
-        // This should be simple in postgres, since it is just append the query separator after each query and send as a big
-        // sql statement, however it does not seem to work on mysql
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public SQLConnection batchWithParams(String sqlStatement, List<JsonArray> args, Handler<AsyncResult<List<Integer>>> handler) {
-        // This should be simple in postgres, since it is just append the query separator after each query and send as a big
-        // sql statement, however it does not seem to work on mysql
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    @Override
-    public SQLConnection batchCallableWithParams(String sqlStatement, List<JsonArray> inArgs, List<JsonArray> outArgs, Handler<AsyncResult<List<Integer>>> handler) {
-        // No idea how to implement this
         throw new UnsupportedOperationException("Not implemented");
     }
 

@@ -33,6 +33,7 @@ public class MapperProxy<T> implements InvocationHandler {
         System.out.println(getMapperMethod(method));
         System.out.println(Arrays.toString(args));
 
+
         DataHandler handler;
         if (args[args.length - 1] instanceof DataHandler) {
             handler = (DataHandler) args[args.length - 1];
@@ -40,7 +41,6 @@ public class MapperProxy<T> implements InvocationHandler {
         }
         return null;
     }
-
 
     private MapperMethod getMapperMethod(Method method) {
         MapperMethod mapperMethod = null;
@@ -65,7 +65,6 @@ public class MapperProxy<T> implements InvocationHandler {
                                 | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC)
                 .unreflectSpecial(method, declaringClass).bindTo(proxy).invokeWithArguments(args);
     }
-
 
     private boolean isDefaultMethod(Method method) {
         return (method.getModifiers()
