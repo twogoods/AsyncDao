@@ -1,4 +1,4 @@
-package com.tg.async;
+package com.tg.async.test;
 
 import com.github.mauricio.async.db.*;
 import com.github.mauricio.async.db.mysql.MySQLConnection;
@@ -22,8 +22,9 @@ import scala.collection.Map$;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 import scala.runtime.AbstractFunction1;
+
 import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -32,20 +33,28 @@ import java.util.concurrent.TimeUnit;
  * Created by twogoods on 2018/4/12.
  */
 public class BaseSqlTest {
+
     @Test
     public void test() throws Exception {
+
         Vertx vertx = Vertx.vertx();
+        AsyncConfig asyncConfig = new AsyncConfig();
         PoolConfiguration configuration = new PoolConfiguration("root", "localhost", 3306, "admin", "test");
-        AsyncDaoFactory asyncDaoFactory = AsyncDaoFactory.build(new AsyncConfig());
+        asyncConfig.setPoolConfiguration(configuration);
+        asyncConfig.setXmlLocations("");
+        AsyncDaoFactory asyncDaoFactory = AsyncDaoFactory.build(asyncConfig);
 
         CommonDao commonDao = asyncDaoFactory.getMapper(CommonDao.class);
-
-        commonDao.query(new User(), new DataHandler<List<User>>() {
+        User user = new User();
+        user.setUsername("ha");
+        commonDao.query(user, new DataHandler<List<User>>() {
             @Override
             public void handle(List<User> users) {
                 System.out.println(users);
             }
         });
+
+        Thread.currentThread().join();
     }
 
 
@@ -58,7 +67,7 @@ public class BaseSqlTest {
         pool.getConnection(res -> {
             if (res.succeeded()) {
 
-                res.result().queryWithParams("select * from T_User where id in(?,?)", Arrays.asList(1, 2), new Handler<AsyncResult<ResultSet>>() {
+                res.result().queryWithParams("select * from T_User order by id desc", new ArrayList(), new Handler<AsyncResult<ResultSet>>() {
                     @Override
                     public void handle(AsyncResult<ResultSet> event) {
                         if (event.succeeded()) {

@@ -33,9 +33,6 @@ public class ResourceScanner {
     public static Set<String> getXml(List<String> paths) throws Exception {
         Set<String> xmlFiles = new HashSet<>();
         for (String path : paths) {
-            if (StringUtils.isEmpty(path)) {
-                continue;
-            }
             getByPackage(path, xmlFiles, ".xml", null);
         }
         return xmlFiles;

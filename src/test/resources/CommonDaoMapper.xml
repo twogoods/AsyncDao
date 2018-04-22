@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mapper namespace="com.tg.test.UserMapper">
-  <resultMap id="BaseResultMap" type="com.tg.test.User">
+<mapper namespace="com.tg.async.mapper.CommonDao">
+  <resultMap id="BaseResultMap" type="com.tg.async.mapper.User">
     <id column="id" property="id"/>
     <result column="old_address" property="oldAddress"/>
     <result column="created_at" property="createdAt"/>
@@ -12,13 +12,10 @@
     <result column="updated_at" property="updatedAt"/>
   </resultMap>
 
-  <select id="queryUser" resultMap="BaseResultMap">select username,age from T_User 
+  <select id="query" resultMap="BaseResultMap">select username,age from T_User
     <where>
-      <if test="name!=null and name!=''">AND username = #{name}</if>
-      <if test="age != null">OR age &gt; #{age}</if>
-      <if test="ids !=null and ids.length > 0">AND id in
-        <foreach item="item" collection="ids" open="(" separator="," close=")">#{item}</foreach>
-      </if>
+      <if test="user.username!=null and user.username!=''">AND username = #{user.username}</if>
+      <if test="user.age != null">OR age = #{user.age}</if>
     </where> order by id desc
   </select>
 

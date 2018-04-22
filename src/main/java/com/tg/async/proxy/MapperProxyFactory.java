@@ -1,9 +1,7 @@
 package com.tg.async.proxy;
 
-import java.lang.reflect.Method;
+import com.tg.async.mysql.Configuration;
 import java.lang.reflect.Proxy;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by twogoods on 2018/4/12.
@@ -11,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MapperProxyFactory<T> {
 
     private Class<T> mapperInterface;
-    private final Map<Method, MapperMethod> methodCache = new ConcurrentHashMap<Method, MapperMethod>();
 
     public MapperProxyFactory(Class<T> mapperInterface) {
         this.mapperInterface = mapperInterface;
@@ -22,8 +19,8 @@ public class MapperProxyFactory<T> {
         return (T) Proxy.newProxyInstance(mapperInterface.getClassLoader(), new Class[]{mapperInterface}, mapperProxy);
     }
 
-    public T newInstance() {
-        final MapperProxy<T> mapperProxy = new MapperProxy<T>(mapperInterface);
+    public T newInstance(Configuration configuration) {
+        final MapperProxy<T> mapperProxy = new MapperProxy<T>(configuration, mapperInterface);
         return newInstance(mapperProxy);
     }
 }

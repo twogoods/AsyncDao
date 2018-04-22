@@ -1,6 +1,7 @@
 package com.tg.async.test;
 
 import com.tg.async.dynamic.xml.XMLMapperBuilder;
+import com.tg.async.mysql.Configuration;
 import com.tg.async.utils.ResourceScanner;
 import org.junit.Test;
 
@@ -11,7 +12,7 @@ public class XmlText {
 
     @Test
     public void test() throws Exception {
-        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(ResourceScanner.getResourceAsStream("UserTestMapper.xml"), "UserTestMapper.xml");
+        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(new Configuration(), ResourceScanner.getResourceAsStream("CommonDaoMapper.xml"), "CommonDaoMapper.xml");
         xmlMapperBuilder.parse();
     }
 }

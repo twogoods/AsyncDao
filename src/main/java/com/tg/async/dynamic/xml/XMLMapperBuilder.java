@@ -3,6 +3,7 @@ package com.tg.async.dynamic.xml;
 import com.tg.async.dynamic.mapping.*;
 import com.tg.async.dynamic.xmltags.*;
 import com.tg.async.exception.BuilderException;
+import com.tg.async.mysql.Configuration;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -17,6 +18,7 @@ import java.util.Map;
  */
 public class XMLMapperBuilder {
 
+    private final Configuration configuration;
     private final XPathParser parser;
     private final String resource;
     private final Map<String, NodeHandler> nodeHandlerMap = new HashMap<>();
@@ -30,7 +32,8 @@ public class XMLMapperBuilder {
         nodeHandlerMap.put("if", new IfHandler());
     }
 
-    public XMLMapperBuilder(InputStream inputStream, String resource) {
+    public XMLMapperBuilder(Configuration configuration, InputStream inputStream, String resource) {
+        this.configuration = configuration;
         this.parser = new XPathParser(inputStream);
         this.resource = resource;
         initNodeHandlerMap();
@@ -73,7 +76,7 @@ public class XMLMapperBuilder {
             }
         }
         resultMap.setResultMappings(resultMappings);
-        MapperCache.addResultMap(buildKey(namespace, id), resultMap);
+        configuration.addResultMap(buildKey(namespace, id), resultMap);
     }
 
     private ResultMapping buildResultMapping(XNode node) {
@@ -104,7 +107,7 @@ public class XMLMapperBuilder {
                 .resultType(resultType)
                 .resultMap(resultMap)
                 .build();
-        MapperCache.addMappedStatement(buildKey(namespace, id), mappedStatement);
+        configuration.addMappedStatement(buildKey(namespace, id), mappedStatement);
     }
 
 
@@ -145,6 +148,7 @@ public class XMLMapperBuilder {
     private class WhereHandler implements NodeHandler {
         public WhereHandler() {
         }
+
         @Override
         public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
             MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);

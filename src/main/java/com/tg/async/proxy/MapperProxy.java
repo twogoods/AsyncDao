@@ -1,27 +1,38 @@
 package com.tg.async.proxy;
 
+import com.github.mauricio.async.db.ResultSet;
+import com.github.mauricio.async.db.RowData;
 import com.tg.async.base.DataHandler;
 import com.tg.async.base.MapperMethod;
-
+import com.tg.async.dynamic.mapping.BoundSql;
+import com.tg.async.dynamic.mapping.MappedStatement;
+import com.tg.async.mysql.Configuration;
+import com.tg.async.mysql.SQLConnection;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import lombok.extern.slf4j.Slf4j;
+import scala.runtime.AbstractFunction1;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by twogoods on 2018/4/12.
  */
+@Slf4j
 public class MapperProxy<T> implements InvocationHandler {
 
+    private Configuration configuration;
     private Class<T> mapperInterface;
-    private Map<Method, MapperMethod> methodCache = new ConcurrentHashMap<>();
 
-    public MapperProxy(Class<T> mapperInterface) {
+    public MapperProxy(Configuration configuration, Class<T> mapperInterface) {
         this.mapperInterface = mapperInterface;
+        this.configuration = configuration;
     }
 
     @Override
@@ -29,24 +40,60 @@ public class MapperProxy<T> implements InvocationHandler {
         if (isDefaultMethod(method)) {
             return invokeDefaultMethod(proxy, method, args);
         }
+        MapperMethod mapperMethod = getMapperMethod(method);
+        MappedStatement mappedStatement = configuration.getMappedStatement(mapperMethod.getName());
+        BoundSql boundSql = mappedStatement.getSqlSource().getBoundSql(convertArgs(mapperMethod, args));
+        log.debug("sql : {}", boundSql);
+        configuration.getConnectionPool().getConnection(asyncConnection -> {
+            SQLConnection connection = asyncConnection.result();
+            DataHandler handler = null;
+            if (args[args.length - 1] instanceof DataHandler) {
+                handler = (DataHandler) args[args.length - 1];
+            }
+            connection.queryWithParams(boundSql.getSql(), boundSql.getParameters(), new Handler<AsyncResult<ResultSet>>() {
+                @Override
+                public void handle(AsyncResult<ResultSet> event) {
+                    if (event.succeeded()) {
+                        event.result().foreach(new AbstractFunction1<RowData, Void>() {
+                            @Override
+                            public Void apply(RowData row) {
 
-        System.out.println(getMapperMethod(method));
-        System.out.println(Arrays.toString(args));
+                                row.foreach(new AbstractFunction1<Object, Void>() {
+                                    @Override
+                                    public Void apply(Object value) {
+                                        System.out.println(value);
+                                        return null;
+                                    }
+                                });
+                                return null;
+                            }
+                        });
+                    } else {
+                        event.cause().printStackTrace();
+                    }
 
-
-        DataHandler handler;
-        if (args[args.length - 1] instanceof DataHandler) {
-            handler = (DataHandler) args[args.length - 1];
-            handler.handle(null);
-        }
+                }
+            });
+        });
         return null;
     }
 
+
+    private Object convertArgs(MapperMethod mapperMethod, Object[] args) {
+        Map<String, Object> param = new HashMap<>();
+        List<String> params = mapperMethod.getParamName();
+        for (int i = 0; i < params.size() - 1; i++) {
+            param.put(params.get(i), args[i]);
+        }
+        return param;
+    }
+
+
     private MapperMethod getMapperMethod(Method method) {
         MapperMethod mapperMethod = null;
-        if ((mapperMethod = methodCache.get(method)) == null) {
+        if ((mapperMethod = configuration.getMapperMethod(method)) == null) {
             mapperMethod = new MapperMethod(mapperInterface, method);
-            methodCache.put(method, mapperMethod);
+            configuration.addMapperMethod(method, mapperMethod);
         }
         return mapperMethod;
     }
