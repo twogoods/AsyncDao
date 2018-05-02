@@ -3,8 +3,11 @@ package com.tg.async.mysql;
 import com.tg.async.dynamic.xml.XMLMapperBuilder;
 import com.tg.async.mysql.pool.ConnectionPool;
 import com.tg.async.mysql.pool.PoolConfiguration;
+import com.tg.async.parse.IfaceParser;
+import com.tg.async.parse.Parser;
 import com.tg.async.utils.ResourceScanner;
 import io.vertx.core.Vertx;
+
 import java.util.Arrays;
 import java.util.Set;
 
@@ -24,13 +27,17 @@ public class MapperLoader {
     private void parseXmlMapper(String path) throws Exception {
         Set<String> files = ResourceScanner.getXml(Arrays.asList(path.split(",")));
         for (String file : files) {
-            XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(configuration, ResourceScanner.getStreamFromFile(file), file);
-            xmlMapperBuilder.parse();
+            Parser parser  = new XMLMapperBuilder(configuration, ResourceScanner.getStreamFromFile(file), file);
+            parser.parse();
         }
     }
 
-    private void parseIfaceMapper(String packageName) {
-
+    private void parseIfaceMapper(String packageName) throws Exception {
+        Set<String> classes = ResourceScanner.getClasses(Arrays.asList(packageName.split(",")));
+        for (String className : classes) {
+            Parser parser = new IfaceParser(configuration, className);
+            parser.parse();
+        }
     }
 
     private void preparePool(PoolConfiguration poolConfiguration, Vertx vertx) {

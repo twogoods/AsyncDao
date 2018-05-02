@@ -12,6 +12,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import lombok.extern.slf4j.Slf4j;
 import scala.runtime.AbstractFunction1;
+
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -44,6 +45,8 @@ public class MapperProxy<T> implements InvocationHandler {
         MappedStatement mappedStatement = configuration.getMappedStatement(mapperMethod.getName());
         BoundSql boundSql = mappedStatement.getSqlSource().getBoundSql(convertArgs(mapperMethod, args));
         log.debug("sql : {}", boundSql);
+
+
         configuration.getConnectionPool().getConnection(asyncConnection -> {
             SQLConnection connection = asyncConnection.result();
             DataHandler handler = null;
@@ -52,9 +55,13 @@ public class MapperProxy<T> implements InvocationHandler {
             }
             connection.queryWithParams(boundSql.getSql(), boundSql.getParameters(), new Handler<AsyncResult<ResultSet>>() {
                 @Override
-                public void handle(AsyncResult<ResultSet> event) {
-                    if (event.succeeded()) {
-                        event.result().foreach(new AbstractFunction1<RowData, Void>() {
+                public void handle(AsyncResult<ResultSet> asyncResult) {
+                    if (asyncResult.succeeded()) {
+
+                        ResultSet resultSet = asyncResult.result();
+
+
+                        resultSet.foreach(new AbstractFunction1<RowData, Void>() {
                             @Override
                             public Void apply(RowData row) {
 
@@ -69,7 +76,7 @@ public class MapperProxy<T> implements InvocationHandler {
                             }
                         });
                     } else {
-                        event.cause().printStackTrace();
+                        asyncResult.cause().printStackTrace();
                     }
 
                 }

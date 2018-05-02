@@ -16,6 +16,7 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import org.junit.Test;
 import scala.Option;
 import scala.collection.Map$;
@@ -25,6 +26,7 @@ import scala.runtime.AbstractFunction1;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;

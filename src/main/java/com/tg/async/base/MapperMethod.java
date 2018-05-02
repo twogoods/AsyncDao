@@ -1,6 +1,7 @@
 package com.tg.async.base;
 
 import com.tg.async.exception.MethodDefinitionException;
+import com.tg.async.exception.UnsupportTypeException;
 import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -8,8 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -19,13 +19,18 @@ import java.util.stream.Collectors;
 @ToString
 @Slf4j
 public class MapperMethod {
-
     private Class iface;
     private Method method;
-    private Type actualType;
     private String name;
     private List<String> paramName;
 
+    private Class wrapper;
+    private Class primary;
+
+    private boolean returnsMany = false;
+    private boolean returnsMap = false;
+    private boolean returnsVoid = false;
+    private boolean returnsSingle = false;
 
     public MapperMethod(Class iface, Method method) {
         this.iface = iface;
@@ -37,16 +42,34 @@ public class MapperMethod {
 
     private void parseActualType() throws MethodDefinitionException {
         Type[] types = method.getGenericParameterTypes();
-
         if (types.length == 0 || !method.getParameterTypes()[types.length - 1].equals(DataHandler.class)) {
             throw new MethodDefinitionException(
                     String.format("method's param should continues DataHandler, in interface : {}, method : {}",
                             iface.getName(), method.getName()));
         }
-        Type t = null;
-        if ((t = types[types.length - 1]) instanceof ParameterizedType) {
-            Type[] handleTypes = ((ParameterizedType) t).getActualTypeArguments();
-            actualType = handleTypes[0];
+        Type handle = types[types.length - 1];
+        if (handle instanceof ParameterizedType) {
+            Type handlerWrapperType = ((ParameterizedType) handle).getActualTypeArguments()[0];
+            if (handlerWrapperType instanceof ParameterizedType) {
+                //list or map model
+                Type dataContinerType = ((ParameterizedType) handlerWrapperType).getRawType();
+                if (dataContinerType.equals(List.class)) {
+                    wrapper = ArrayList.class;
+                    returnsMany = true;
+                } else if (dataContinerType.equals(Map.class)) {
+                    wrapper = HashMap.class;
+                    returnsMap = true;
+                } else {
+                    throw new UnsupportTypeException(String.format("not support type : &s", dataContinerType));
+                }
+            } else if (handlerWrapperType instanceof Class) {
+                primary = (Class) handlerWrapperType;
+                if (primary.equals(Void.class)) {
+                    returnsVoid = true;
+                } else {
+                    returnsSingle = true;
+                }
+            }
         }
     }
 
@@ -57,5 +80,19 @@ public class MapperMethod {
 
     private String buildName(Class iface, Method method) {
         return iface.getName() + "." + method.getName();
+    }
+
+    protected Class<?> classToCreate(Class<?> type) {
+        Class<?> classToCreate;
+        if (type == List.class || type == Collection.class || type == Iterable.class) {
+            classToCreate = ArrayList.class;
+        } else if (type == Map.class) {
+            classToCreate = HashMap.class;
+        } else if (type == Set.class) {
+            classToCreate = HashSet.class;
+        } else {
+            classToCreate = type;
+        }
+        return classToCreate;
     }
 }

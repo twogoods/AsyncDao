@@ -1,7 +1,7 @@
 package com.tg.async.dynamic.mapping;
 
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * Created by twogoods on 2018/4/13.
@@ -11,7 +11,7 @@ public class ResultMap {
     private String type;
     private Class clazz;
     private ResultMapping idResultMap;
-    private List<ResultMapping> resultMappings;
+    private Map<String, ResultMapping> resultMappings;
 
 
     public String getId() {
@@ -46,11 +46,16 @@ public class ResultMap {
         this.idResultMap = idResultMap;
     }
 
-    public List<ResultMapping> getResultMappings() {
+    public Map<String, ResultMapping> getResultMappings() {
         return resultMappings;
     }
 
-    public void setResultMappings(List<ResultMapping> resultMappings) {
+    public void setResultMappings(Map<String, ResultMapping> resultMappings) {
         this.resultMappings = resultMappings;
     }
+
+    public ResultMapping getResultMappingItem(String column) {
+        return resultMappings.get(column);
+    }
+
 }

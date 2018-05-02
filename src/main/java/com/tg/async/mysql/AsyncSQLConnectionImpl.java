@@ -272,16 +272,4 @@ public class AsyncSQLConnectionImpl implements SQLConnection {
             }
         };
     }
-
-    private List<JsonArray> rowDataSeqToJsonArray(com.github.mauricio.async.db.ResultSet set) {
-        List<JsonArray> list = new ArrayList<>();
-        set.foreach(new AbstractFunction1<RowData, Void>() {
-            @Override
-            public Void apply(RowData row) {
-                list.add(ScalaUtils.rowToJsonArray(row));
-                return null;
-            }
-        });
-        return list;
-    }
 }

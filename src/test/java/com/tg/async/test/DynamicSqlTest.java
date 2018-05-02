@@ -3,6 +3,7 @@ package com.tg.async.test;
 import com.tg.async.dynamic.mapping.BoundSql;
 import com.tg.async.dynamic.mapping.MappedStatement;
 import com.tg.async.dynamic.xml.XMLMapperBuilder;
+import com.tg.async.mysql.Configuration;
 import com.tg.async.utils.ResourceScanner;
 import com.tg.async.mapper.User;
 import org.junit.Test;
@@ -14,19 +15,21 @@ import java.util.Map;
  * Created by twogoods on 2018/4/19.
  */
 public class DynamicSqlTest {
-
-    /*
     @Test
     public void query() throws Exception {
-        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(ResourceScanner.getResourceAsStream("CommonDaoMapper.xml"), "CommonDaoMapper.xml");
+        Configuration configuration = new Configuration();
+        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(configuration,
+                ResourceScanner.getResourceAsStream("CommonDaoMapper.xml"), "CommonDaoMapper.xml");
         xmlMapperBuilder.parse();
 
-        MappedStatement mappedStatement = MapperCache.getMappedStatement("com.tg.test.UserMapper.queryUser");
+        MappedStatement mappedStatement = configuration.getMappedStatement("com.tg.async.mapper.CommonDao.query");
 
         Map<String, Object> param = new HashMap<>();
-        param.put("name", "twogoods");
-        param.put("age", 12);
-        param.put("ids", new int[]{1, 2, 3});
+
+        User user=new User();
+        user.setUsername("twogoods");
+        user.setAge(23);
+        param.put("user", user);
 
         BoundSql boundSql = mappedStatement.getSqlSource().getBoundSql(param);
         System.out.println(boundSql.getSql());
@@ -35,9 +38,10 @@ public class DynamicSqlTest {
 
     @Test
     public void insert() throws Exception {
-        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(ResourceScanner.getResourceAsStream("CommonDaoMapper.xml"), "CommonDaoMapper.xml");
+        Configuration configuration = new Configuration();
+        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(configuration, ResourceScanner.getResourceAsStream("CommonDaoMapper.xml"), "CommonDaoMapper.xml");
         xmlMapperBuilder.parse();
-        MappedStatement mappedStatement = MapperCache.getMappedStatement("com.tg.test.UserMapper.insert");
+        MappedStatement mappedStatement = configuration.getMappedStatement("com.tg.async.mapper.CommonDao.insert");
 
         User user = new User();
         user.setUsername("haha");
@@ -53,5 +57,5 @@ public class DynamicSqlTest {
 
 
     }
-    */
+
 }

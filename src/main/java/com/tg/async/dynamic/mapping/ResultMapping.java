@@ -1,14 +1,15 @@
 package com.tg.async.dynamic.mapping;
 
 
+import lombok.Data;
+
 /**
  * Created by twogoods on 2018/4/13.
  */
-
+@Data
 public class ResultMapping {
     private String column;
     private String property;
-
 
     public ResultMapping(String column, String property) {
         this.column = column;

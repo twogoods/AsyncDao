@@ -4,6 +4,8 @@ import com.tg.async.dynamic.mapping.*;
 import com.tg.async.dynamic.xmltags.*;
 import com.tg.async.exception.BuilderException;
 import com.tg.async.mysql.Configuration;
+import com.tg.async.mysql.MapperLoader;
+import com.tg.async.parse.Parser;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -16,7 +18,7 @@ import java.util.Map;
 /**
  * Created by twogoods on 2018/4/12.
  */
-public class XMLMapperBuilder {
+public class XMLMapperBuilder implements Parser {
 
     private final Configuration configuration;
     private final XPathParser parser;
@@ -39,6 +41,7 @@ public class XMLMapperBuilder {
         initNodeHandlerMap();
     }
 
+    @Override
     public void parse() {
         configurationElement(parser.evalNode("/mapper"));
     }
@@ -66,13 +69,14 @@ public class XMLMapperBuilder {
         String type = resultMapNode.getStringAttribute("type");
         resultMap.setId(id);
         resultMap.setType(type);
-        List<ResultMapping> resultMappings = new ArrayList<>();
+        Map<String, ResultMapping> resultMappings = new HashMap<>();
         List<XNode> resultChildren = resultMapNode.getChildren();
         for (XNode resultChild : resultChildren) {
             if ("id".equals(resultChild.getName())) {
                 resultMap.setIdResultMap(buildResultMapping(resultChild));
             } else {
-                resultMappings.add(buildResultMapping(resultChild));
+                ResultMapping resultMapping = buildResultMapping(resultChild);
+                resultMappings.put(resultMapping.getColumn(), resultMapping);
             }
         }
         resultMap.setResultMappings(resultMappings);
