@@ -4,8 +4,7 @@ import com.tg.async.annotation.Column;
 import com.tg.async.annotation.Id;
 import com.tg.async.annotation.Ignore;
 import com.tg.async.annotation.Table;
-
-import java.sql.Timestamp;
+import org.joda.time.LocalDateTime;
 
 /**
  * Created by twogoods on 2018/4/12.
@@ -18,19 +17,19 @@ public class User {
 
     private String username;
     private String password;
-    private int age;
+    private Integer age;
 
     @Column("old_address")
     private String oldAddress;
     @Column("now_address")
     private String nowAddress;
 
-    private int state;
+    private Byte state;
 
     @Column("created_at")
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
     @Column("updated_at")
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
 
     @Ignore
     private String remrk;
@@ -59,14 +58,6 @@ public class User {
         this.password = password;
     }
 
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
     public String getOldAddress() {
         return oldAddress;
     }
@@ -83,27 +74,35 @@ public class User {
         this.nowAddress = nowAddress;
     }
 
-    public int getState() {
+    public void setAge(Integer age) {
+        this.age = age;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public Byte getState() {
         return state;
     }
 
-    public void setState(int state) {
+    public void setState(Byte state) {
         this.state = state;
     }
 
-    public Timestamp getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Timestamp getUpdatedAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Timestamp updatedAt) {
+    public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 

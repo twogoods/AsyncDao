@@ -73,7 +73,9 @@ public class XMLMapperBuilder implements Parser {
         List<XNode> resultChildren = resultMapNode.getChildren();
         for (XNode resultChild : resultChildren) {
             if ("id".equals(resultChild.getName())) {
-                resultMap.setIdResultMap(buildResultMapping(resultChild));
+                ResultMapping resultMapping = buildResultMapping(resultChild);
+                resultMap.setIdResultMap(resultMapping);
+                resultMappings.put(resultMapping.getColumn(), resultMapping);
             } else {
                 ResultMapping resultMapping = buildResultMapping(resultChild);
                 resultMappings.put(resultMapping.getColumn(), resultMapping);

@@ -1,5 +1,6 @@
 package com.tg.async.mysql;
 
+import com.github.mauricio.async.db.QueryResult;
 import com.github.mauricio.async.db.ResultSet;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -19,13 +20,13 @@ public interface SQLConnection {
 
     SQLConnection executeWithParams(String sql, List params, Handler<AsyncResult<Void>> handler);
 
-    SQLConnection query(String sql, Handler<AsyncResult<ResultSet>> handler);
+    SQLConnection query(String sql, Handler<AsyncResult<QueryResult>> handler);
 
-    SQLConnection queryWithParams(String sql, List params, Handler<AsyncResult<ResultSet>> handler);
+    SQLConnection queryWithParams(String sql, List params, Handler<AsyncResult<QueryResult>> handler);
 
-    SQLConnection update(String sql, Handler<AsyncResult<ResultSet>> handler);
+    SQLConnection update(String sql, Handler<AsyncResult<QueryResult>> handler);
 
-    SQLConnection updateWithParams(String sql, List params, Handler<AsyncResult<ResultSet>> handler);
+    SQLConnection updateWithParams(String sql, List params, Handler<AsyncResult<QueryResult>> handler);
 
     void close(Handler<AsyncResult<Void>> handler);
 

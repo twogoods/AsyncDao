@@ -22,6 +22,9 @@ public class IfaceParser implements Parser {
     public void parse() {
         try {
             Class clazz = Class.forName(className);
+            if (!clazz.isInterface()) {
+                return;
+            }
             Method[] methods = clazz.getMethods();
             for (Method method : methods) {
                 configuration.addMapperMethod(method, new MapperMethod(clazz, method));

@@ -44,7 +44,7 @@ public class MapperMethod {
         Type[] types = method.getGenericParameterTypes();
         if (types.length == 0 || !method.getParameterTypes()[types.length - 1].equals(DataHandler.class)) {
             throw new MethodDefinitionException(
-                    String.format("method's param should continues DataHandler, in interface : {}, method : {}",
+                    String.format("method's param should continue DataHandler, in interface : {}, method : {}",
                             iface.getName(), method.getName()));
         }
         Type handle = types[types.length - 1];
@@ -55,12 +55,18 @@ public class MapperMethod {
                 Type dataContinerType = ((ParameterizedType) handlerWrapperType).getRawType();
                 if (dataContinerType.equals(List.class)) {
                     wrapper = ArrayList.class;
+                    Type dataType = ((ParameterizedType) handlerWrapperType).getActualTypeArguments()[0];
+                    if (dataType instanceof Class) {
+                        primary = (Class)dataType;
+                    }else{
+                        throw new UnsupportTypeException(String.format("not support type : %s", dataContinerType));
+                    }
                     returnsMany = true;
                 } else if (dataContinerType.equals(Map.class)) {
                     wrapper = HashMap.class;
                     returnsMap = true;
                 } else {
-                    throw new UnsupportTypeException(String.format("not support type : &s", dataContinerType));
+                    throw new UnsupportTypeException(String.format("not support type : %s", dataContinerType));
                 }
             } else if (handlerWrapperType instanceof Class) {
                 primary = (Class) handlerWrapperType;

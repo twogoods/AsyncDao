@@ -1,17 +1,17 @@
 package com.tg.async.proxy;
 
-import com.github.mauricio.async.db.ResultSet;
-import com.github.mauricio.async.db.RowData;
+import com.github.mauricio.async.db.QueryResult;
 import com.tg.async.base.DataHandler;
 import com.tg.async.base.MapperMethod;
 import com.tg.async.dynamic.mapping.BoundSql;
 import com.tg.async.dynamic.mapping.MappedStatement;
+import com.tg.async.dynamic.mapping.ResultMap;
 import com.tg.async.mysql.Configuration;
 import com.tg.async.mysql.SQLConnection;
+import com.tg.async.utils.DataConverter;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import lombok.extern.slf4j.Slf4j;
-import scala.runtime.AbstractFunction1;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -41,48 +41,151 @@ public class MapperProxy<T> implements InvocationHandler {
         if (isDefaultMethod(method)) {
             return invokeDefaultMethod(proxy, method, args);
         }
-        MapperMethod mapperMethod = getMapperMethod(method);
+        final MapperMethod mapperMethod = getMapperMethod(method);
+
         MappedStatement mappedStatement = configuration.getMappedStatement(mapperMethod.getName());
+
+        DataHandler handler = null;
+        if (args[args.length - 1] instanceof DataHandler) {
+            handler = (DataHandler) args[args.length - 1];
+        }
+        switch (mappedStatement.getSqlType()) {
+            case INSERT: {
+
+            }
+            case UPDATE: {
+
+            }
+            case DELETE: {
+
+            }
+            case SELECT: {
+
+            }
+            case UNKNOWN: {
+
+            }
+        }
+
+
+        return null;
+    }
+
+
+    private interface ExcuteSQLhandle {
+        void handle(MapperMethod mapperMethod, QueryResult queryResult, ResultMap resultMap, DataHandler dataHandler);
+    }
+
+
+    private class SelectHandle implements ExcuteSQLhandle {
+        @Override
+        public void handle(MapperMethod mapperMethod, QueryResult queryResult, ResultMap resultMap, DataHandler dataHandler) {
+            if (mapperMethod.isReturnsMany()) {
+                List list = DataConverter.queryResultToListObject(queryResult, mapperMethod.getPrimary(), resultMap);
+                dataHandler.handle(list);
+            } else if (mapperMethod.isReturnsMap()) {
+                dataHandler.handle(DataConverter.queryResultToMap(queryResult, resultMap));
+            } else if (mapperMethod.isReturnsSingle()) {
+                dataHandler.handle(DataConverter.queryResultToObject(queryResult, mapperMethod.getPrimary(), resultMap));
+            } else if (mapperMethod.isReturnsVoid()) {
+                dataHandler.handle(null);
+            }
+        }
+    }
+
+
+    private class InsertHandle implements ExcuteSQLhandle {
+        @Override
+        public void handle(MapperMethod mapperMethod, QueryResult queryResult, ResultMap resultMap, DataHandler dataHandler) {
+            if (mapperMethod.isReturnsMany()) {
+                List list = DataConverter.queryResultToListObject(queryResult, mapperMethod.getPrimary(), resultMap);
+                dataHandler.handle(list);
+            } else if (mapperMethod.isReturnsMap()) {
+                dataHandler.handle(DataConverter.queryResultToMap(queryResult, resultMap));
+            } else if (mapperMethod.isReturnsSingle()) {
+                dataHandler.handle(DataConverter.queryResultToObject(queryResult, mapperMethod.getPrimary(), resultMap));
+            } else if (mapperMethod.isReturnsVoid()) {
+                dataHandler.handle(null);
+            }
+        }
+    }
+
+    private void execute(MapperMethod mapperMethod, MappedStatement mappedStatement, Object[] args, DataHandler dataHandler, ExcuteSQLhandle excuteSQLhandle) {
         BoundSql boundSql = mappedStatement.getSqlSource().getBoundSql(convertArgs(mapperMethod, args));
         log.debug("sql : {}", boundSql);
-
-
         configuration.getConnectionPool().getConnection(asyncConnection -> {
             SQLConnection connection = asyncConnection.result();
-            DataHandler handler = null;
-            if (args[args.length - 1] instanceof DataHandler) {
-                handler = (DataHandler) args[args.length - 1];
-            }
-            connection.queryWithParams(boundSql.getSql(), boundSql.getParameters(), new Handler<AsyncResult<ResultSet>>() {
+            connection.queryWithParams(boundSql.getSql(), boundSql.getParameters(), new Handler<AsyncResult<QueryResult>>() {
                 @Override
-                public void handle(AsyncResult<ResultSet> asyncResult) {
+                public void handle(AsyncResult<QueryResult> asyncResult) {
                     if (asyncResult.succeeded()) {
-
-                        ResultSet resultSet = asyncResult.result();
-
-
-                        resultSet.foreach(new AbstractFunction1<RowData, Void>() {
-                            @Override
-                            public Void apply(RowData row) {
-
-                                row.foreach(new AbstractFunction1<Object, Void>() {
-                                    @Override
-                                    public Void apply(Object value) {
-                                        System.out.println(value);
-                                        return null;
-                                    }
-                                });
-                                return null;
-                            }
-                        });
+                        QueryResult queryResult = asyncResult.result();
+                        ResultMap resultMap = configuration.getResultMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
+                        excuteSQLhandle.handle(mapperMethod,queryResult,resultMap,dataHandler);
                     } else {
-                        asyncResult.cause().printStackTrace();
+                        log.error("execute sql error {}", asyncResult.cause());
                     }
-
                 }
             });
         });
-        return null;
+    }
+
+    private void select(MapperMethod mapperMethod, MappedStatement mappedStatement, Object[] args, DataHandler dataHandler) {
+        BoundSql boundSql = mappedStatement.getSqlSource().getBoundSql(convertArgs(mapperMethod, args));
+        log.debug("sql : {}", boundSql);
+
+        configuration.getConnectionPool().getConnection(asyncConnection -> {
+            SQLConnection connection = asyncConnection.result();
+
+            connection.queryWithParams(boundSql.getSql(), boundSql.getParameters(), new Handler<AsyncResult<QueryResult>>() {
+                @Override
+                public void handle(AsyncResult<QueryResult> asyncResult) {
+                    if (asyncResult.succeeded()) {
+                        QueryResult queryResult = asyncResult.result();
+                        ResultMap resultMap = configuration.getResultMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
+
+                        //TODO select insert 自增id
+
+                    } else {
+                        log.error("execute sql error {}", asyncResult.cause());
+                    }
+                }
+            });
+        });
+    }
+
+    private void insert(MapperMethod mapperMethod, MappedStatement mappedStatement, Object[] args, DataHandler dataHandler) {
+        BoundSql boundSql = mappedStatement.getSqlSource().getBoundSql(convertArgs(mapperMethod, args));
+        log.debug("sql : {}", boundSql);
+
+        configuration.getConnectionPool().getConnection(asyncConnection -> {
+            SQLConnection connection = asyncConnection.result();
+            connection.queryWithParams(boundSql.getSql(), boundSql.getParameters(), new Handler<AsyncResult<QueryResult>>() {
+                @Override
+                public void handle(AsyncResult<QueryResult> asyncResult) {
+                    if (asyncResult.succeeded()) {
+                        QueryResult queryResult = asyncResult.result();
+                        ResultMap resultMap = configuration.getResultMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
+
+
+                        //TODO select insert 自增id
+                        DataHandler handler = (DataHandler) args[args.length - 1];
+                        if (mapperMethod.isReturnsMany()) {
+                            List list = DataConverter.queryResultToListObject(queryResult, mapperMethod.getPrimary(), resultMap);
+                            handler.handle(list);
+                        } else if (mapperMethod.isReturnsMap()) {
+                            handler.handle(DataConverter.queryResultToMap(queryResult, resultMap));
+                        } else if (mapperMethod.isReturnsSingle()) {
+                            handler.handle(DataConverter.queryResultToObject(queryResult, mapperMethod.getPrimary(), resultMap));
+                        } else if (mapperMethod.isReturnsVoid()) {
+                            handler.handle(null);
+                        }
+                    } else {
+                        log.error("execute sql error {}", asyncResult.cause());
+                    }
+                }
+            });
+        });
     }
 
 

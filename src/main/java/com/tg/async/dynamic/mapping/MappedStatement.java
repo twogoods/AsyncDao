@@ -12,7 +12,7 @@ public class MappedStatement {
     private String parameterType;
     private String resultType;
     private String resultMap;
-    private SqlType sqlType;
+    private SqlType sqlType = SqlType.UNKNOWN;
     private String id;
     private String useGeneratedKeys;
     private String keyProperty;
