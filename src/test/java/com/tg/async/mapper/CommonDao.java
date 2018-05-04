@@ -8,6 +8,7 @@ import com.tg.async.base.DataHandler;
 import com.tg.async.constant.Criterions;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by twogoods on 2018/3/23.
@@ -30,4 +31,14 @@ public interface CommonDao {
             @ModelCondition(field = "maxAge", column = "age", criterion = Criterions.LESS)
     })
     void query(User user, DataHandler<List<User>> handler);
+
+    void querySingle(User user, DataHandler<User> handler);
+
+    void querySingleMap(User user, DataHandler<Map> handler);
+
+    void insert(User user,DataHandler<Long> handler);
+
+    void update(User user,DataHandler<Long> handler);
+
+    void delete(User user,DataHandler<Long> handler);
 }

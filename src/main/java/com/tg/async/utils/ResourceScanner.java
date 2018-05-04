@@ -59,6 +59,7 @@ public class ResourceScanner {
                 String basePath = baseURL.getFile();
                 //TODO xml和class 检测
                 if ("jar".equals(protocol)) {
+                    //TODO check jar包内资源扫描可能出现的问题
                     //实际运行中看到了这样的形式的jar目录 /BOOT-INF/classes!/com ,classes是一个目录,去掉后面的!,原因还没弄明白.
                     basePath = basePath.replace("classes!", "classes");
                     String[] paths = basePath.split("jar!/");

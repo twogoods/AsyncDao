@@ -1,6 +1,7 @@
 package com.tg.async.dynamic.mapping;
 
 
+import com.tg.async.exception.BuilderException;
 import lombok.Getter;
 
 /**
@@ -12,7 +13,7 @@ public class MappedStatement {
     private String parameterType;
     private String resultType;
     private String resultMap;
-    private SqlType sqlType = SqlType.UNKNOWN;
+    private SqlType sqlType;
     private String id;
     private String useGeneratedKeys;
     private String keyProperty;
@@ -28,9 +29,12 @@ public class MappedStatement {
         public Builder(String id, SqlSource sqlSource, String mode) {
             mappedStatement.id = id;
             mappedStatement.sqlSource = sqlSource;
-            mappedStatement.sqlType = SqlType.valueOf(mode.toUpperCase());
+            try {
+                mappedStatement.sqlType = SqlType.valueOf(mode.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                new BuilderException(String.format("sql mode {} not support", mode));
+            }
         }
-
 
         public Builder parameterType(String parameterType) {
             mappedStatement.parameterType = parameterType;
