@@ -6,7 +6,7 @@ import com.tg.async.base.DataHandler;
 import com.tg.async.base.MapperMethod;
 import com.tg.async.dynamic.mapping.BoundSql;
 import com.tg.async.dynamic.mapping.MappedStatement;
-import com.tg.async.dynamic.mapping.ResultMap;
+import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.dynamic.mapping.SqlType;
 import com.tg.async.mysql.Configuration;
 import com.tg.async.mysql.SQLConnection;
@@ -81,7 +81,7 @@ public class MapperProxy<T> implements InvocationHandler {
 
 
     private interface ExcuteSQLhandle {
-        void handle(MapperMethod mapperMethod, QueryResult queryResult, ResultMap resultMap, DataHandler dataHandler);
+        void handle(MapperMethod mapperMethod, QueryResult queryResult, ModelMap resultMap, DataHandler dataHandler);
     }
 
 
@@ -112,7 +112,7 @@ public class MapperProxy<T> implements InvocationHandler {
 
     private class SelectHandle extends BaseSQLhandle {
         @Override
-        public void handle(MapperMethod mapperMethod, QueryResult queryResult, ResultMap resultMap, DataHandler dataHandler) {
+        public void handle(MapperMethod mapperMethod, QueryResult queryResult, ModelMap resultMap, DataHandler dataHandler) {
             if (mapperMethod.isReturnsMany()) {
                 List list = DataConverter.queryResultToListObject(queryResult, mapperMethod.getPrimary(), resultMap);
                 dataHandler.handle(list);
@@ -133,7 +133,7 @@ public class MapperProxy<T> implements InvocationHandler {
 
     private class InsertHandle extends BaseSQLhandle {
         @Override
-        public void handle(MapperMethod mapperMethod, QueryResult queryResult, ResultMap resultMap, DataHandler dataHandler) {
+        public void handle(MapperMethod mapperMethod, QueryResult queryResult, ModelMap resultMap, DataHandler dataHandler) {
             MappedStatement mappedStatement = configuration.getMappedStatement(mapperMethod.getName());
             if ("true".equals(mappedStatement.getUseGeneratedKeys())) {
                 long generatedKey = ((MySQLQueryResult) queryResult).lastInsertId();
@@ -157,7 +157,7 @@ public class MapperProxy<T> implements InvocationHandler {
 
     private class UpdateHandle extends BaseSQLhandle {
         @Override
-        public void handle(MapperMethod mapperMethod, QueryResult queryResult, ResultMap resultMap, DataHandler dataHandler) {
+        public void handle(MapperMethod mapperMethod, QueryResult queryResult, ModelMap resultMap, DataHandler dataHandler) {
             MappedStatement mappedStatement = configuration.getMappedStatement(mapperMethod.getName());
             handleReturnData(mapperMethod, dataHandler, queryResult.rowsAffected(), false);
         }
@@ -170,7 +170,7 @@ public class MapperProxy<T> implements InvocationHandler {
 
     private class DeleteHandle extends BaseSQLhandle {
         @Override
-        public void handle(MapperMethod mapperMethod, QueryResult queryResult, ResultMap resultMap, DataHandler dataHandler) {
+        public void handle(MapperMethod mapperMethod, QueryResult queryResult, ModelMap resultMap, DataHandler dataHandler) {
             MappedStatement mappedStatement = configuration.getMappedStatement(mapperMethod.getName());
             handleReturnData(mapperMethod, dataHandler, queryResult.rowsAffected(), false);
         }
@@ -192,7 +192,7 @@ public class MapperProxy<T> implements InvocationHandler {
                 public void handle(AsyncResult<QueryResult> asyncResult) {
                     if (asyncResult.succeeded()) {
                         QueryResult queryResult = asyncResult.result();
-                        ResultMap resultMap = configuration.getResultMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
+                        ModelMap resultMap = configuration.getModelMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
                         excuteSQLhandle.handle(mapperMethod, queryResult, resultMap, dataHandler);
                     } else {
                         log.error("execute sql error {}", asyncResult.cause());

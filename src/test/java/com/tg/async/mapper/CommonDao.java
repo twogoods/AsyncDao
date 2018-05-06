@@ -1,9 +1,6 @@
 package com.tg.async.mapper;
 
-import com.tg.async.annotation.ModelCondition;
-import com.tg.async.annotation.ModelConditions;
-import com.tg.async.annotation.Page;
-import com.tg.async.annotation.Select;
+import com.tg.async.annotation.*;
 import com.tg.async.base.DataHandler;
 import com.tg.async.constant.Criterions;
 
@@ -13,6 +10,7 @@ import java.util.Map;
 /**
  * Created by twogoods on 2018/3/23.
  */
+@Sql(User.class)
 public interface CommonDao {
 
     /**

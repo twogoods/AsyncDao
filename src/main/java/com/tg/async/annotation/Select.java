@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * Created by twogoods on 2018/4/12.
  */
 @Target({ElementType.METHOD})
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Select {
     String columns() default "";
 

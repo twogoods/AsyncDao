@@ -4,8 +4,6 @@ import com.tg.async.dynamic.mapping.*;
 import com.tg.async.dynamic.xmltags.*;
 import com.tg.async.exception.BuilderException;
 import com.tg.async.mysql.Configuration;
-import com.tg.async.mysql.MapperLoader;
-import com.tg.async.parse.Parser;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -18,7 +16,7 @@ import java.util.Map;
 /**
  * Created by twogoods on 2018/4/12.
  */
-public class XMLMapperBuilder implements Parser {
+public class XMLMapperBuilder{
 
     private final Configuration configuration;
     private final XPathParser parser;
@@ -41,8 +39,7 @@ public class XMLMapperBuilder implements Parser {
         initNodeHandlerMap();
     }
 
-    @Override
-    public void parse() {
+    public void build() {
         configurationElement(parser.evalNode("/mapper"));
     }
 
@@ -64,29 +61,29 @@ public class XMLMapperBuilder implements Parser {
     }
 
     private void resultMapElement(XNode resultMapNode) {
-        ResultMap resultMap = new ResultMap();
+        ModelMap resultMap = new ModelMap();
         String id = resultMapNode.getStringAttribute("id");
         String type = resultMapNode.getStringAttribute("type");
         resultMap.setId(id);
         resultMap.setType(type);
-        Map<String, ResultMapping> resultMappings = new HashMap<>();
+        Map<String, ColumnMapping> resultMappings = new HashMap<>();
         List<XNode> resultChildren = resultMapNode.getChildren();
         for (XNode resultChild : resultChildren) {
             if ("id".equals(resultChild.getName())) {
-                ResultMapping resultMapping = buildResultMapping(resultChild);
+                ColumnMapping resultMapping = buildResultMapping(resultChild);
                 resultMap.setIdResultMap(resultMapping);
                 resultMappings.put(resultMapping.getColumn(), resultMapping);
             } else {
-                ResultMapping resultMapping = buildResultMapping(resultChild);
+                ColumnMapping resultMapping = buildResultMapping(resultChild);
                 resultMappings.put(resultMapping.getColumn(), resultMapping);
             }
         }
         resultMap.setResultMappings(resultMappings);
-        configuration.addResultMap(buildKey(namespace, id), resultMap);
+        configuration.addModelMap(buildKey(namespace, id), resultMap);
     }
 
-    private ResultMapping buildResultMapping(XNode node) {
-        return new ResultMapping(node.getStringAttribute("column"),
+    private ColumnMapping buildResultMapping(XNode node) {
+        return new ColumnMapping(node.getStringAttribute("column"),
                 node.getStringAttribute("property"));
     }
 

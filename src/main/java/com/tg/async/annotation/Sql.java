@@ -6,14 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by twogoods on 2018/4/12.
+ * Created by twogoods on 2018/5/6.
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Page {
-
-    String offsetField() default "offset";
-
-    String limitField() default "limit";
-
+public @interface Sql {
+    Class<?> value();
 }

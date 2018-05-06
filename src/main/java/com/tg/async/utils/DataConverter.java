@@ -3,8 +3,8 @@ package com.tg.async.utils;
 import com.github.mauricio.async.db.QueryResult;
 import com.github.mauricio.async.db.ResultSet;
 import com.github.mauricio.async.db.RowData;
-import com.tg.async.dynamic.mapping.ResultMap;
-import com.tg.async.dynamic.mapping.ResultMapping;
+import com.tg.async.dynamic.mapping.ModelMap;
+import com.tg.async.dynamic.mapping.ColumnMapping;
 import com.tg.async.mysql.ScalaUtils;
 import lombok.extern.slf4j.Slf4j;
 import scala.Option;
@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DataConverter {
     private static Map<Class, Map<String, PropertyDescriptor>> classesWithProperty = new ConcurrentHashMap<>();
 
-    public static <T> List<T> queryResultToListObject(QueryResult queryResult, Class<T> clazz, ResultMap resultMap) {
+    public static <T> List<T> queryResultToListObject(QueryResult queryResult, Class<T> clazz, ModelMap resultMap) {
         final Option<ResultSet> rows = queryResult.rows();
         java.util.List<T> list = new ArrayList<T>();
         if (rows.isDefined()) {
@@ -41,7 +41,7 @@ public class DataConverter {
         return list;
     }
 
-    public static <T> T queryResultToObject(QueryResult queryResult, Class<T> clazz, ResultMap resultMap) {
+    public static <T> T queryResultToObject(QueryResult queryResult, Class<T> clazz, ModelMap resultMap) {
         final Option<ResultSet> rows = queryResult.rows();
         if (rows.isDefined()) {
             List<String> columnNames = ScalaUtils.toJavaList(rows.get().columnNames().toList());
@@ -57,7 +57,7 @@ public class DataConverter {
         return null;
     }
 
-    public static Map<String, Object> queryResultToMap(QueryResult queryResult, ResultMap resultMap) {
+    public static Map<String, Object> queryResultToMap(QueryResult queryResult, ModelMap resultMap) {
         final Option<ResultSet> rows = queryResult.rows();
         Map<String, Object> map = new HashMap<>();
         if (rows.isDefined()) {
@@ -70,7 +70,7 @@ public class DataConverter {
         return map;
     }
 
-    public static Map<String, Object> rowDataToMap(RowData rowData, ResultMap resultMap, List<String> columnNames) {
+    public static Map<String, Object> rowDataToMap(RowData rowData, ModelMap resultMap, List<String> columnNames) {
         Map<String, Object> res = new HashMap<>();
         Iterator<Object> iterable = rowData.iterator();
         int index = 0;
@@ -84,7 +84,7 @@ public class DataConverter {
     }
 
 
-    public static <T> T rowDataToObject(RowData rowData, Class<T> clazz, ResultMap resultMap, List<String> columnNames) throws Exception {
+    public static <T> T rowDataToObject(RowData rowData, Class<T> clazz, ModelMap resultMap, List<String> columnNames) throws Exception {
         T t = clazz.newInstance();
         Iterator<Object> iterable = rowData.iterator();
         int index = 0;
@@ -130,11 +130,11 @@ public class DataConverter {
         return map;
     }
 
-    private static String getProperty(ResultMap resultMap, String columnName) {
+    private static String getProperty(ModelMap resultMap, String columnName) {
         if (resultMap == null) {
             return columnName;
         }
-        ResultMapping resultMapping = resultMap.getResultMappingItem(columnName);
+        ColumnMapping resultMapping = resultMap.getResultMappingItem(columnName);
         if (resultMapping == null) {
             return columnName;
         }

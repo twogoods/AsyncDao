@@ -2,7 +2,7 @@ package com.tg.async.mysql;
 
 import com.tg.async.base.MapperMethod;
 import com.tg.async.dynamic.mapping.MappedStatement;
-import com.tg.async.dynamic.mapping.ResultMap;
+import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.mysql.pool.ConnectionPool;
 
 import java.lang.reflect.Method;
@@ -19,7 +19,7 @@ public class Configuration {
 
     private Map<String, MappedStatement> statementCache = new HashMap<>();
 
-    private Map<String, ResultMap> resultMapCache = new HashMap<>();
+    private Map<String, ModelMap> modelMapCache = new HashMap<>();
 
     private Map<Method, MapperMethod> methodCache = new ConcurrentHashMap<>();
 
@@ -39,13 +39,12 @@ public class Configuration {
         return statementCache.get(key);
     }
 
-
-    public void addResultMap(String key, ResultMap resultMap) {
-        resultMapCache.put(key, resultMap);
+    public void addModelMap(String key, ModelMap resultMap) {
+        modelMapCache.put(key, resultMap);
     }
 
-    public ResultMap getResultMap(String key) {
-        return resultMapCache.get(key);
+    public ModelMap getModelMap(String key) {
+        return modelMapCache.get(key);
     }
 
 
