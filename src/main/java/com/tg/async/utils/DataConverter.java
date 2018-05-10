@@ -134,7 +134,7 @@ public class DataConverter {
         if (resultMap == null) {
             return columnName;
         }
-        ColumnMapping resultMapping = resultMap.getResultMappingItem(columnName);
+        ColumnMapping resultMapping = resultMap.getColumnKeyMappings().get(columnName);
         if (resultMapping == null) {
             return columnName;
         }

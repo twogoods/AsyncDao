@@ -15,5 +15,6 @@ public class ModelMap {
     private String table;
     private Class clazz;
     private ColumnMapping idResultMap;
-    private Map<String, ColumnMapping> resultMappings;
+    private Map<String, ColumnMapping> columnKeyMappings;
+    private Map<String, ColumnMapping> fieldKeyMappings;
 }

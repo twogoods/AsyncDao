@@ -78,7 +78,7 @@ public class XMLMapperBuilder{
                 resultMappings.put(resultMapping.getColumn(), resultMapping);
             }
         }
-        resultMap.setResultMappings(resultMappings);
+        resultMap.setColumnKeyMappings(resultMappings);
         configuration.addModelMap(buildKey(namespace, id), resultMap);
     }
 

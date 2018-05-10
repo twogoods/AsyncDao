@@ -1,7 +1,9 @@
 package com.tg.async.parse;
 
+import com.tg.async.annotation.Insert;
 import com.tg.async.annotation.Select;
-import com.tg.async.dynamic.annotation.SelectGen;
+import com.tg.async.dynamic.annotation.primary.InsertGen;
+import com.tg.async.dynamic.annotation.primary.SelectGen;
 import com.tg.async.dynamic.annotation.SqlGen;
 import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.mysql.Configuration;
@@ -23,7 +25,9 @@ public class AnnotatedSQLParser {
 
     public void parse(Method method) {
         SqlGen sqlGen = prepare(method);
-        configuration.addMappedStatement(buildKey(className, method.getName()), sqlGen.generate());
+        if (sqlGen != null) {
+            configuration.addMappedStatement(buildKey(className, method.getName()), sqlGen.generate());
+        }
     }
 
 
@@ -33,6 +37,10 @@ public class AnnotatedSQLParser {
         if (select != null) {
             return new SelectGen(method, select, modelMap);
         }
+//        Insert insert = method.getAnnotation(Insert.class);
+//        if (insert !=null){
+//            return new InsertGen(method, insert, modelMap);
+//        }
         return null;
     }
 
