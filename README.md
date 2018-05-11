@@ -9,8 +9,6 @@ asyncDao是一款异步非阻塞模型下的数据访问层工具。
 
 
 ```
-//定义mapper，由于异步非阻塞的关系，
-//数据的返回都会通过回调DataHandler来完成，所以方法定义参数的最后一个一定是DataHandler类型
 public interface CommonDao {
 
     void query(User user, DataHandler<List<User>> handler);

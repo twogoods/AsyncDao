@@ -69,7 +69,7 @@ public class IfaceParser {
 
         modelMap.setIdResultMap(idColumns.size() == 0 ? null : idColumns.get(0));
         Map<String, ColumnMapping> columnMappings = Arrays.asList(fields).stream()
-                .filter(field -> field.isAnnotationPresent(Ignore.class))
+                .filter(field -> !field.isAnnotationPresent(Ignore.class))
                 .map(this::generateColumnMapping)
                 .collect(Collectors.toMap(ColumnMapping::getColumn, columnMapping -> columnMapping));
 
@@ -94,17 +94,13 @@ public class IfaceParser {
             String column = field.getAnnotation(Column.class).value();
             return generateColumnMapping(column, field.getName());
         }
-        return generateColumnMapping(null, field.getName());
+        return generateColumnMapping(field.getName(), field.getName());
 
     }
 
     private ColumnMapping generateColumnMapping(String column, String property) {
         ColumnMapping columnMapping = new ColumnMapping();
-        if (StringUtils.isEmpty(column)) {
-            columnMapping.setColumn(column);
-        } else {
-            columnMapping.setColumn(property);
-        }
+        columnMapping.setColumn(column);
         columnMapping.setProperty(property);
         return columnMapping;
 

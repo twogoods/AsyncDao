@@ -1,12 +1,12 @@
 package com.tg.async.dynamic.annotation;
 
 import com.tg.async.dynamic.annotation.where.AbstractWhereSqlGen;
-import com.tg.async.dynamic.mapping.ColumnMapping;
 import com.tg.async.dynamic.mapping.DynamicSqlSource;
 import com.tg.async.dynamic.mapping.MappedStatement;
 import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.dynamic.xmltags.MixedSqlNode;
 import com.tg.async.dynamic.xmltags.SqlNode;
+import com.tg.async.dynamic.xmltags.StaticTextSqlNode;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -19,6 +19,8 @@ public abstract class AbstractSqlGen implements SqlGen {
     protected ModelMap modelMap;
     protected AbstractWhereSqlGen abstractWhereSqlGen;
 
+    protected static final String testTemplate = "%s.%s != null";
+
     public AbstractSqlGen(Method method, ModelMap modelMap) {
         this.method = method;
         this.modelMap = modelMap;
@@ -27,19 +29,20 @@ public abstract class AbstractSqlGen implements SqlGen {
     protected abstract SqlNode generateBaseSql();
 
     protected SqlNode generateWhereSql() {
+        if (abstractWhereSqlGen == null) {
+            return new StaticTextSqlNode("");
+        }
         return abstractWhereSqlGen.generateWhereSql();
     }
 
     protected SqlNode generateSuffixSql() {
-        return null;
+        return new StaticTextSqlNode("");
     }
 
     @Override
     public MappedStatement generate() {
         MixedSqlNode rootSqlNode = new MixedSqlNode(Arrays.asList(generateBaseSql(), generateWhereSql()));
-        MappedStatement mappedStatement = new MappedStatement.Builder(buildKey(), new DynamicSqlSource(rootSqlNode), "select")
-                .keyGenerator(null)
-                .keyProperty(null)
+        MappedStatement mappedStatement = new MappedStatement.Builder(buildKey(), new DynamicSqlSource(rootSqlNode), sqlType())
                 .parameterType(null)
                 .resultType(null)
                 .resultMap(null)
@@ -48,12 +51,9 @@ public abstract class AbstractSqlGen implements SqlGen {
     }
 
 
-    protected String getColumnByField(String field) {
-        ColumnMapping columnMapping = modelMap.getFieldKeyMappings().get(field);
-        return columnMapping == null ? field : columnMapping.getColumn();
-    }
+    public abstract String sqlType();
 
-    private String buildKey() {
+    protected String buildKey() {
         return method.getClass().getName() + "." + method.getName();
     }
 }

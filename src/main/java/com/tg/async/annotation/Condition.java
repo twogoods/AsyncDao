@@ -20,6 +20,5 @@ public @interface Condition {
 
     Attach attach() default Attach.AND;
 
-    //selective 下参数值得判断条件 即  <if test="username != null">username = #{username}</if>
     String test() default "";
 }
