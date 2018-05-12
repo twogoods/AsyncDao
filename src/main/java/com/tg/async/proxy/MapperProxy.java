@@ -14,6 +14,7 @@ import com.tg.async.utils.DataConverter;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -192,7 +193,12 @@ public class MapperProxy<T> implements InvocationHandler {
                 public void handle(AsyncResult<QueryResult> asyncResult) {
                     if (asyncResult.succeeded()) {
                         QueryResult queryResult = asyncResult.result();
-                        ModelMap resultMap = configuration.getModelMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
+                        ModelMap resultMap;
+                        if (StringUtils.isEmpty(mappedStatement.getResultMap())) {
+                            resultMap = configuration.getModelMap(mappedStatement.getResultType());
+                        } else {
+                            resultMap = configuration.getModelMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
+                        }
                         excuteSQLhandle.handle(mapperMethod, queryResult, resultMap, dataHandler);
                     } else {
                         log.error("execute sql error {}", asyncResult.cause());

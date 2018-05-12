@@ -53,9 +53,6 @@ public class InsertGen extends AbstractSqlGen {
         MappedStatement mappedStatement = new MappedStatement.Builder(buildKey(), new DynamicSqlSource(rootSqlNode), sqlType())
                 .keyGenerator(String.valueOf(insert.useGeneratedKeys()))
                 .keyProperty(insert.keyProperty())
-                .parameterType(null)
-                .resultType(null)
-                .resultMap(null)
                 .build();
         return mappedStatement;
     }

@@ -3,10 +3,11 @@ package com.tg.async.dynamic.xml;
 import com.tg.async.dynamic.mapping.*;
 import com.tg.async.dynamic.xmltags.*;
 import com.tg.async.exception.BuilderException;
+import com.tg.async.exception.ParseException;
 import com.tg.async.mysql.Configuration;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ import java.util.Map;
 /**
  * Created by twogoods on 2018/4/12.
  */
-public class XMLMapperBuilder{
+public class XMLMapperBuilder {
 
     private final Configuration configuration;
     private final XPathParser parser;
@@ -92,21 +93,19 @@ public class XMLMapperBuilder{
     }
 
     private void parseStatement(XNode node) {
-        //String parameterMap = node.getStringAttribute("parameterMap");
-        String parameterType = node.getStringAttribute("parameterType");
-        String resultType = node.getStringAttribute("resultType");
-        String resultMap = node.getStringAttribute("resultMap");
-
         String mode = node.getName();
         String id = node.getStringAttribute("id");
         String useGeneratedKeys = node.getStringAttribute("useGeneratedKeys");
         String keyProperty = node.getStringAttribute("keyProperty");
-
+        String resultType = node.getStringAttribute("resultType");
+        String resultMap = node.getStringAttribute("resultMap");
+        if (StringUtils.isEmpty(resultMap) && StringUtils.isEmpty(resultType)) {
+            throw new ParseException(id + " has no resultMap or resultType");
+        }
         MixedSqlNode rootSqlNode = parseDynamicTags(node);
         MappedStatement mappedStatement = new MappedStatement.Builder(id, new DynamicSqlSource(rootSqlNode), mode)
                 .keyGenerator(useGeneratedKeys)
                 .keyProperty(keyProperty)
-                .parameterType(parameterType)
                 .resultType(resultType)
                 .resultMap(resultMap)
                 .build();

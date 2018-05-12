@@ -7,6 +7,7 @@ import com.tg.async.mysql.AsyncDaoFactory;
 import com.tg.async.mysql.pool.PoolConfiguration;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -37,7 +38,16 @@ public class CommonDaoTest {
         user.setAge(10);
 
         commonDao.query(user, users -> {
-            System.out.println(users);
+            System.out.println("result: " + users);
+            latch.countDown();
+        });
+        latch.await();
+    }
+
+    @Test
+    public void queryParam() throws Exception {
+        commonDao.queryParam("ha",10, users -> {
+            System.out.println("result: " + users);
             latch.countDown();
         });
         latch.await();
@@ -85,8 +95,8 @@ public class CommonDaoTest {
     @Test
     public void update() throws Exception {
         User user = new User();
-        user.setId(19L);
-        user.setPassword("123456");
+        user.setId(3L);
+        user.setPassword("1234");
         user.setAge(28);
 
         commonDao.update(user, count -> {
@@ -99,7 +109,7 @@ public class CommonDaoTest {
     @Test
     public void delete() throws Exception {
         User user = new User();
-        user.setId(18L);
+        user.setId(3L);
 
         commonDao.delete(user, count -> {
             System.out.println("affect count :" + count);

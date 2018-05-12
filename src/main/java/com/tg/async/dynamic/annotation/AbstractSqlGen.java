@@ -43,9 +43,7 @@ public abstract class AbstractSqlGen implements SqlGen {
     public MappedStatement generate() {
         MixedSqlNode rootSqlNode = new MixedSqlNode(Arrays.asList(generateBaseSql(), generateWhereSql()));
         MappedStatement mappedStatement = new MappedStatement.Builder(buildKey(), new DynamicSqlSource(rootSqlNode), sqlType())
-                .parameterType(null)
-                .resultType(null)
-                .resultMap(null)
+                .resultType(modelMap.getType())
                 .build();
         return mappedStatement;
     }

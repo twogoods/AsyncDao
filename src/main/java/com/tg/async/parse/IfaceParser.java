@@ -7,8 +7,6 @@ import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.exception.BuilderException;
 import com.tg.async.exception.ParseException;
 import com.tg.async.mysql.Configuration;
-import org.apache.commons.lang3.StringUtils;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -17,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by twogoods on 2018/4/27.
@@ -35,12 +32,10 @@ public class IfaceParser {
             if (!clazz.isInterface()) {
                 return;
             }
-
             Annotation annotation = clazz.getAnnotation(Sql.class);
             if (annotation != null) {
                 parseModelMapping(((Sql) annotation).value(), className);
             }
-
             Method[] methods = clazz.getMethods();
             AnnotatedSQLParser annotatedSQLParser = new AnnotatedSQLParser(configuration, className);
             for (Method method : methods) {
@@ -84,7 +79,6 @@ public class IfaceParser {
 
 
     private ColumnMapping generateColumnMapping(Field field) {
-        ColumnMapping columnMapping = new ColumnMapping();
         if (field.isAnnotationPresent(Id.class)) {
             String id = field.getAnnotation(Id.class).value();
             return generateColumnMapping(id, field.getName());
@@ -95,7 +89,6 @@ public class IfaceParser {
             return generateColumnMapping(column, field.getName());
         }
         return generateColumnMapping(field.getName(), field.getName());
-
     }
 
     private ColumnMapping generateColumnMapping(String column, String property) {
@@ -103,7 +96,6 @@ public class IfaceParser {
         columnMapping.setColumn(column);
         columnMapping.setProperty(property);
         return columnMapping;
-
     }
 
 }

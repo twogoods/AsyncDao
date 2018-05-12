@@ -2,6 +2,7 @@ package com.tg.async.mapper;
 
 import com.tg.async.annotation.*;
 import com.tg.async.base.DataHandler;
+import com.tg.async.constant.Attach;
 import com.tg.async.constant.Criterions;
 
 import java.util.List;
@@ -21,22 +22,30 @@ public interface CommonDao {
      * <p>
      * 参考：dbutils mybatis ognl
      */
-    @Select
-    @Page
+    @Select(columns = "id,age,username")
     @ModelConditions({
             @ModelCondition(field = "username", criterion = Criterions.EQUAL),
-            @ModelCondition(field = "minAge", column = "age", criterion = Criterions.GREATER),
-            @ModelCondition(field = "maxAge", column = "age", criterion = Criterions.LESS)
+            @ModelCondition(field = "age", column = "age", criterion = Criterions.GREATER, attach = Attach.OR)
     })
     void query(User user, DataHandler<List<User>> handler);
+
+
+    @Select(columns = "age,username")
+    void queryParam(@Condition String username, @Condition(criterion = Criterions.GREATER) Integer age, DataHandler<List<User>> handler);
 
     void querySingle(User user, DataHandler<User> handler);
 
     void querySingleMap(User user, DataHandler<Map> handler);
 
-    void insert(User user,DataHandler<Long> handler);
 
-    void update(User user,DataHandler<Long> handler);
+    @Insert(useGeneratedKeys = true, keyProperty = "id")
+    void insert(User user, DataHandler<Long> handler);
 
-    void delete(User user,DataHandler<Long> handler);
+    @Update
+    @ModelConditions(@ModelCondition(field = "id"))
+    void update(User user, DataHandler<Long> handler);
+
+    @Delete
+    @ModelConditions(@ModelCondition(field = "id"))
+    void delete(User user, DataHandler<Long> handler);
 }

@@ -10,7 +10,6 @@ import lombok.Getter;
 @Getter
 public class MappedStatement {
 
-    private String parameterType;
     private String resultType;
     private String resultMap;
     private SqlType sqlType;
@@ -34,11 +33,6 @@ public class MappedStatement {
             } catch (IllegalArgumentException e) {
                 new BuilderException(String.format("sql mode {} not support", mode));
             }
-        }
-
-        public Builder parameterType(String parameterType) {
-            mappedStatement.parameterType = parameterType;
-            return this;
         }
 
         public Builder resultType(String resultType) {
