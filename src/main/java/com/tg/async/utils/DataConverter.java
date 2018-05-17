@@ -5,11 +5,13 @@ import com.github.mauricio.async.db.ResultSet;
 import com.github.mauricio.async.db.RowData;
 import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.dynamic.mapping.ColumnMapping;
+import com.tg.async.exception.ParseException;
 import com.tg.async.mysql.ScalaUtils;
 import lombok.extern.slf4j.Slf4j;
 import scala.Option;
 import scala.collection.Iterator;
 import scala.runtime.AbstractFunction1;
+
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -85,8 +87,21 @@ public class DataConverter {
 
 
     public static <T> T rowDataToObject(RowData rowData, Class<T> clazz, ModelMap resultMap, List<String> columnNames) throws Exception {
-        T t = clazz.newInstance();
         Iterator<Object> iterable = rowData.iterator();
+        //只查一个字段或者count时，这时返回类型可能是String这种非用户自定义的类型
+        // 所以这个类如果是JDK内的类，以及joda里的类（可能查了时间字段），直接返回，因为它肯定不是用户自定义的那种model
+        if (columnNames.size() == 1 && (clazz.getClassLoader() == null) || clazz.getName().startsWith("org.joda.time")) {
+            Object item = iterable.next();
+            if (item == null) {
+                return null;
+            } else if (!clazz.equals(item.getClass())) {
+                throw new ParseException(String.format("data type you want convert is %s ,but database return type is %s ,just change it", clazz, item.getClass()));
+            } else {
+                return (T) item;
+            }
+        }
+
+        T t = clazz.newInstance();
         int index = 0;
         while (iterable.hasNext()) {
             Object item = iterable.next();

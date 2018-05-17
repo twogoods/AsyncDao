@@ -57,8 +57,8 @@ public class MapperMethod {
                     wrapper = ArrayList.class;
                     Type dataType = ((ParameterizedType) handlerWrapperType).getActualTypeArguments()[0];
                     if (dataType instanceof Class) {
-                        primary = (Class)dataType;
-                    }else{
+                        primary = (Class) dataType;
+                    } else {
                         throw new UnsupportTypeException(String.format("not support type : %s", dataContinerType));
                     }
                     returnsMany = true;

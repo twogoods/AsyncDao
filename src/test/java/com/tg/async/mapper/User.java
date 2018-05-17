@@ -11,28 +11,28 @@ import org.joda.time.LocalDateTime;
  */
 
 @Table(name = "T_User")
-public class User {
-    @Id("id")
-    private Long id;
+    public class User {
+        @Id("id")
+        private Long id;
 
-    private String username;
-    private String password;
-    private Integer age;
+        private String username;
+        private String password;
+        private Integer age;
 
-    @Column("old_address")
-    private String oldAddress;
-    @Column("now_address")
-    private String nowAddress;
+        @Column("old_address")
+        private String oldAddress;
+        @Column("now_address")
+        private String nowAddress;
 
-    private Byte state;
+        private Byte state;
 
-    @Column("created_at")
-    private LocalDateTime createdAt;
-    @Column("updated_at")
-    private LocalDateTime updatedAt;
+        @Column("created_at")
+        private LocalDateTime createdAt;
+        @Column("updated_at")
+        private LocalDateTime updatedAt;
 
-    @Ignore
-    private String remrk;
+        @Ignore
+        private String remrk;
 
     public Long getId() {
         return id;

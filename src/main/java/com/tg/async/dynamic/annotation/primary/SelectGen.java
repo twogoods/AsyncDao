@@ -2,12 +2,15 @@ package com.tg.async.dynamic.annotation.primary;
 
 import com.tg.async.annotation.*;
 import com.tg.async.dynamic.annotation.AbstractSqlGen;
+import com.tg.async.dynamic.annotation.suffix.ModelSuffixGen;
+import com.tg.async.dynamic.annotation.suffix.ParamSuffixGen;
 import com.tg.async.dynamic.annotation.where.FlatParamWhereSqlGen;
 import com.tg.async.dynamic.annotation.where.ModelWhereSqlGen;
 import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.dynamic.xmltags.SqlNode;
 import com.tg.async.dynamic.xmltags.StaticTextSqlNode;
 import org.apache.commons.lang3.StringUtils;
+
 import java.lang.reflect.Method;
 
 /**
@@ -22,8 +25,10 @@ public class SelectGen extends AbstractSqlGen {
         ModelConditions modelConditions = method.getAnnotation(ModelConditions.class);
         if (modelConditions != null) {
             this.abstractWhereSqlGen = new ModelWhereSqlGen(method, modelMap, modelConditions, select.sqlMode());
+            this.abstractSuffixSqlGen = new ModelSuffixGen(method, modelMap, select.sqlMode());
         } else {
             this.abstractWhereSqlGen = new FlatParamWhereSqlGen(method, modelMap, select.sqlMode());
+            this.abstractSuffixSqlGen = new ParamSuffixGen(method, modelMap, select.sqlMode());
         }
     }
 

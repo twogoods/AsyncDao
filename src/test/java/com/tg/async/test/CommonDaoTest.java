@@ -2,6 +2,7 @@ package com.tg.async.test;
 
 import com.tg.async.mapper.CommonDao;
 import com.tg.async.mapper.User;
+import com.tg.async.mapper.UserSearch;
 import com.tg.async.mysql.AsyncConfig;
 import com.tg.async.mysql.AsyncDaoFactory;
 import com.tg.async.mysql.pool.PoolConfiguration;
@@ -33,11 +34,22 @@ public class CommonDaoTest {
 
     @Test
     public void query() throws Exception {
-        User user = new User();
-        user.setUsername("ha");
-        user.setAge(10);
+        UserSearch userSearch = new UserSearch();
+        userSearch.setUsername("ha");
+        userSearch.setMaxAge(28);
+        userSearch.setMinAge(8);
+        userSearch.setLimit(5);
 
-        commonDao.query(user, users -> {
+        commonDao.query(userSearch, users -> {
+            System.out.println("result: " + users);
+            latch.countDown();
+        });
+        latch.await();
+    }
+
+    @Test
+    public void queryList() throws Exception {
+        commonDao.queryList(new int[]{1, 2}, users -> {
             System.out.println("result: " + users);
             latch.countDown();
         });
@@ -46,7 +58,7 @@ public class CommonDaoTest {
 
     @Test
     public void queryParam() throws Exception {
-        commonDao.queryParam("ha",10, users -> {
+        commonDao.queryParam("ha", null, 3, 3, users -> {
             System.out.println("result: " + users);
             latch.countDown();
         });
@@ -73,6 +85,24 @@ public class CommonDaoTest {
 
         commonDao.querySingleMap(user, map -> {
             System.out.println(map);
+            latch.countDown();
+        });
+        latch.await();
+    }
+
+    @Test
+    public void querySingleColumn() throws InterruptedException {
+        commonDao.querySingleColumn(ids -> {
+            System.out.println(ids);
+            latch.countDown();
+        });
+        latch.await();
+    }
+
+    @Test
+    public void count() throws Exception {
+        commonDao.count(count -> {
+            System.out.println("row count: " + count);
             latch.countDown();
         });
         latch.await();
@@ -109,7 +139,7 @@ public class CommonDaoTest {
     @Test
     public void delete() throws Exception {
         User user = new User();
-        user.setId(3L);
+        user.setId(4L);
 
         commonDao.delete(user, count -> {
             System.out.println("affect count :" + count);

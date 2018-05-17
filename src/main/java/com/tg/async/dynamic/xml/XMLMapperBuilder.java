@@ -8,6 +8,7 @@ import com.tg.async.mysql.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,7 +100,7 @@ public class XMLMapperBuilder {
         String keyProperty = node.getStringAttribute("keyProperty");
         String resultType = node.getStringAttribute("resultType");
         String resultMap = node.getStringAttribute("resultMap");
-        if (StringUtils.isEmpty(resultMap) && StringUtils.isEmpty(resultType)) {
+        if ("select".equals(mode) && StringUtils.isEmpty(resultMap) && StringUtils.isEmpty(resultType)) {
             throw new ParseException(id + " has no resultMap or resultType");
         }
         MixedSqlNode rootSqlNode = parseDynamicTags(node);

@@ -1,14 +1,8 @@
 package com.tg.async.parse;
 
-import com.tg.async.annotation.Delete;
-import com.tg.async.annotation.Insert;
-import com.tg.async.annotation.Select;
-import com.tg.async.annotation.Update;
-import com.tg.async.dynamic.annotation.primary.DeleteGen;
-import com.tg.async.dynamic.annotation.primary.InsertGen;
-import com.tg.async.dynamic.annotation.primary.SelectGen;
+import com.tg.async.annotation.*;
+import com.tg.async.dynamic.annotation.primary.*;
 import com.tg.async.dynamic.annotation.SqlGen;
-import com.tg.async.dynamic.annotation.primary.UpdateGen;
 import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.mysql.Configuration;
 
@@ -52,6 +46,10 @@ public class AnnotatedSQLParser {
         Delete delete = method.getAnnotation(Delete.class);
         if (delete != null) {
             return new DeleteGen(method, modelMap, delete);
+        }
+        Count count = method.getAnnotation(Count.class);
+        if (count != null) {
+            return new Countgen(method, modelMap, count);
         }
         return null;
     }

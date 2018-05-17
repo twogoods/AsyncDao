@@ -4,6 +4,7 @@ import com.tg.async.annotation.*;
 import com.tg.async.base.DataHandler;
 import com.tg.async.constant.Attach;
 import com.tg.async.constant.Criterions;
+import com.tg.async.constant.SqlMode;
 
 import java.util.List;
 import java.util.Map;
@@ -23,22 +24,39 @@ public interface CommonDao {
      * 参考：dbutils mybatis ognl
      */
     @Select(columns = "id,age,username")
+    @OrderBy("id desc")
+    @Page(offsetField = "offset", limitField = "limit")
     @ModelConditions({
             @ModelCondition(field = "username", criterion = Criterions.EQUAL),
-            @ModelCondition(field = "age", column = "age", criterion = Criterions.GREATER, attach = Attach.OR)
+            @ModelCondition(field = "maxAge", column = "age", criterion = Criterions.LESS),
+            @ModelCondition(field = "minAge", column = "age", criterion = Criterions.GREATER)
     })
-    void query(User user, DataHandler<List<User>> handler);
+    void query(UserSearch userSearch, DataHandler<List<User>> handler);
 
 
     @Select(columns = "age,username")
-    void queryParam(@Condition String username, @Condition(criterion = Criterions.GREATER) Integer age, DataHandler<List<User>> handler);
+    @OrderBy("id desc")
+    void queryParam(@Condition String username,
+                    @Condition(criterion = Criterions.GREATER) Integer age,
+                    @OffSet int offset,
+                    @Limit int limit,
+                    DataHandler<List<User>> handler);
+
+
+    @Select(columns = "username,age", sqlMode = SqlMode.COMMON)
+    void queryList(@Condition(criterion = Criterions.IN, column = "id") int[] ids, DataHandler<List<User>> handler);
 
     void querySingle(User user, DataHandler<User> handler);
 
     void querySingleMap(User user, DataHandler<Map> handler);
 
+    @Select(columns = "id")
+    void querySingleColumn(DataHandler<List<Long>> handler);
 
-    @Insert(useGeneratedKeys = true, keyProperty = "id")
+    @Count
+    void count(DataHandler<Integer> handler);
+
+    //@Insert(useGeneratedKeys = true, keyProperty = "id")
     void insert(User user, DataHandler<Long> handler);
 
     @Update

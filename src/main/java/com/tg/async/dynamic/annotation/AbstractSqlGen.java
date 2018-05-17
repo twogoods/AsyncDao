@@ -1,6 +1,5 @@
 package com.tg.async.dynamic.annotation;
 
-import com.tg.async.dynamic.annotation.where.AbstractWhereSqlGen;
 import com.tg.async.dynamic.mapping.DynamicSqlSource;
 import com.tg.async.dynamic.mapping.MappedStatement;
 import com.tg.async.dynamic.mapping.ModelMap;
@@ -17,7 +16,8 @@ import java.util.Arrays;
 public abstract class AbstractSqlGen implements SqlGen {
     protected Method method;
     protected ModelMap modelMap;
-    protected AbstractWhereSqlGen abstractWhereSqlGen;
+    protected AbstractSectionSqlGen abstractWhereSqlGen;
+    protected AbstractSectionSqlGen abstractSuffixSqlGen;
 
     protected static final String testTemplate = "%s.%s != null";
 
@@ -32,16 +32,19 @@ public abstract class AbstractSqlGen implements SqlGen {
         if (abstractWhereSqlGen == null) {
             return new StaticTextSqlNode("");
         }
-        return abstractWhereSqlGen.generateWhereSql();
+        return abstractWhereSqlGen.generateSql();
     }
 
     protected SqlNode generateSuffixSql() {
-        return new StaticTextSqlNode("");
+        if (abstractSuffixSqlGen == null) {
+            return new StaticTextSqlNode("");
+        }
+        return abstractSuffixSqlGen.generateSql();
     }
 
     @Override
     public MappedStatement generate() {
-        MixedSqlNode rootSqlNode = new MixedSqlNode(Arrays.asList(generateBaseSql(), generateWhereSql()));
+        MixedSqlNode rootSqlNode = new MixedSqlNode(Arrays.asList(generateBaseSql(), generateWhereSql(), generateSuffixSql()));
         MappedStatement mappedStatement = new MappedStatement.Builder(buildKey(), new DynamicSqlSource(rootSqlNode), sqlType())
                 .resultType(modelMap.getType())
                 .build();

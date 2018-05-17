@@ -1,7 +1,7 @@
-package com.tg.async.dynamic.annotation.where;
+package com.tg.async.dynamic.annotation;
 
+import com.tg.async.annotation.OrderBy;
 import com.tg.async.constant.SqlMode;
-import com.tg.async.dynamic.annotation.ConditionWrap;
 import com.tg.async.dynamic.mapping.ColumnMapping;
 import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.dynamic.xmltags.*;
@@ -13,12 +13,12 @@ import java.util.Arrays;
 /**
  * Created by twogoods on 2018/5/10.
  */
-public abstract class AbstractWhereSqlGen implements WhereSqlGen {
+public abstract class AbstractSectionSqlGen implements SectionSqlGen {
     protected Method method;
     protected ModelMap modelMap;
     protected SqlMode sqlMode;
 
-    public AbstractWhereSqlGen(Method method, ModelMap modelMap, SqlMode sqlMode) {
+    public AbstractSectionSqlGen(Method method, ModelMap modelMap, SqlMode sqlMode) {
         this.method = method;
         this.modelMap = modelMap;
         this.sqlMode = sqlMode;
@@ -54,6 +54,15 @@ public abstract class AbstractWhereSqlGen implements WhereSqlGen {
                 return new IfSqlNode(mixedSqlNode, getTestStr(condition));
             }
         }
+    }
+
+
+    protected SqlNode generateOrder() {
+        OrderBy orderBy = method.getAnnotation(OrderBy.class);
+        if (orderBy != null) {
+            return new StaticTextSqlNode(" order by " + orderBy.value());
+        }
+        return new StaticTextSqlNode("");
     }
 
     private String getTestStr(ConditionWrap conditionWrap) {

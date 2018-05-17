@@ -2,11 +2,11 @@
 asyncDao是一款异步非阻塞模型下的数据访问层工具。
 * MySQL only. 基于MySQL的[异步驱动](https://github.com/mauricio/postgresql-async)
 * 借鉴了Mybatis的mapping 和 dynamicSQL的内容，Mybatiser可以无缝切换
-* 注解表达SQL的能力（**待完成**）
+* 注解表达SQL的能力
 * 事务支持（**待完成**）
 
+### Mybatis like
 使用上与Mybatis几乎一致，由于异步非阻塞的关系，数据的返回都会通过回调DataHandler来完成，所以方法定义参数的最后一个一定是DataHandler类型
-
 
 ```
 public interface CommonDao {
@@ -50,7 +50,7 @@ mapper.xml与Mybatis几乎一致的写法
     </select>
 
 
-    <insert id="insert" parameterType="com.tg.test.User" useGeneratedKeys="true" keyProperty="id">insert into T_User
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">insert into T_User
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="user.oldAddress != null">old_address,</if>
             <if test="user.createdAt != null">created_at,</if>
@@ -73,7 +73,7 @@ mapper.xml与Mybatis几乎一致的写法
         </trim>
     </insert>
 
-    <update id="update" parameterType="com.tg.test.User">
+    <update id="update">
         update T_User
         <set>
             <if test="user.password != null">password=#{user.password},</if>
@@ -83,20 +83,166 @@ mapper.xml与Mybatis几乎一致的写法
     </update>
 </mapper>
 ```
-使用
+
+### 注解SQL
+在XML里写SQL对于一些常见SQL实在是重复劳动，so这里允许你利用注解来表达SQL，该怎么做呢？
+
+#### Table与Model关联
+```
+@Table(name = "T_User")
+public class User {
+    @Id("id")
+    private Long id;
+
+    private String username;
+    private Integer age;
+
+    @Column("now_address")
+    private String nowAddress;
+
+    @Column("created_at")
+    private LocalDateTime createdAt;
+    //asyncDao 里sql的时间类型都用joda，注意不是JDK8提供的那个，而是第三方包org.joda.time
+
+    @Ignore
+    private String remrk;
+```
+@Table记录数据表的名字 @Id记录主键信息 @Column映射了表字段和属性的关系，如果表字段和类属性同名，那么可以省略这个注解 @Ingore忽略这个类属性，没有哪个表字段与它关联。
+#### 定义接口
+```
+@Sql(User.class)
+public interface CommonDao {
+    @Select(columns = "id,age,username")
+    @OrderBy("id desc")
+    @Page
+    @ModelConditions({
+            @ModelCondition(field = "username", criterion = Criterions.EQUAL),
+            @ModelCondition(field = "maxAge", column = "age", criterion = Criterions.LESS),
+            @ModelCondition(field = "minAge", column = "age", criterion = Criterions.GREATER)
+    })
+    void query(UserSearch userSearch, DataHandler<List<User>> handler);
+
+
+    @Select(columns = "age,username")
+    @OrderBy("id desc")
+    void queryParam(@Condition String username,
+                    @Condition(criterion = Criterions.GREATER) Integer age,
+                    @OffSet int offset,
+                    @Limit int limit,
+                    DataHandler<List<User>> handler);
+
+
+    @Select(columns = "username,age", sqlMode = SqlMode.COMMON)
+    void queryList(@Condition(criterion = Criterions.IN, column = "id") int[] ids, DataHandler<List<User>> handler);
+
+    @Insert(useGeneratedKeys = true, keyProperty = "id")
+    void insert(User user, DataHandler<Long> handler);
+
+    @Update
+    @ModelConditions(@ModelCondition(field = "id"))
+    void update(User user, DataHandler<Long> handler);
+
+    @Delete
+    @ModelConditions(@ModelCondition(field = "id"))
+    void delete(User user, DataHandler<Long> handler);
+}
+```
+看到这些注解你应该能猜出来SQL长什么样，接下来解释一下这些注解
+#### 查询
+```
+@Select(columns = "id,age,username")
+@OrderBy("id desc")
+@Page
+@ModelConditions({
+       @ModelCondition(field = "username", criterion = Criterions.EQUAL),
+       @ModelCondition(field = "maxAge", column = "age", criterion = Criterions.LESS),
+       @ModelCondition(field = "minAge", column = "age", criterion = Criterions.GREATER)
+})
+void query(UserSearch userSearch, DataHandler<List<User>> handler);
+```
+##### @Select
+* `columns`:默认 `select *`可以配置`columns("username,age")`选择部分字段；
+* `SqlMode`:有两个选择，SqlMode.SELECTIVE 和 SqlMode.COMMON，区别是selective会检查查询条件的字段是否为null来实现动态的查询，即值为null时不会成为查询条件。并且`@Select`，`@Count`，`@Update`，`@Delete`都有`selective`这个属性。
+
+##### @Condition
+* `criterion`：查询条件，`=`,`<`,`>`,`in`等，具体见`Criterions`
+* `column`：与表字段的对应，若与字段名相同可不配置
+* `attach`：连接 `and`,`or`， 默认是`and`
+* `test`：SqlMode为selective下的判断表达式，类似Mybatis`<if test="username != null">`里的test属性，动态化查询条件
+
+`@Limit`，`@OffSet`为分页字段。
+方法的参数不加任何注解一样会被当做查询条件，如下面两个函数效果是一样的：
+
+```
+@Select()
+void queryUser(Integer age,DataHandler<List<User>> handler);
+
+@Select()
+void queryUser(@Condition(criterion = Criterions.EQUAL, column = "age") Integer age,DataHandler<List<User>> handler);
+```
+#### 查询Model
+上面的例子在查询条件比较多时方法参数会比较多，我们可以把查询条件封装到一个类里，使用`@ModelConditions`来注解查询条件，注意被`@ModelConditions`注解的方法只能有两个参数，一个是查询model，一个是DataHandler。
+
+```
+@Select
+@Page
+@ModelConditions({
+       @ModelCondition(field = "username", criterion = Criterions.EQUAL),
+       @ModelCondition(field = "minAge", column = "age", criterion = Criterions.GREATER),
+       @ModelCondition(field = "maxAge", column = "age", criterion = Criterions.LESS),
+       @ModelCondition(field = "ids", column = "id", criterion = Criterions.IN)
+})
+void queryUser5(UserSearch userSearch,DataHandler<List<User>> handler);
+```
+##### @ModelCondition
+* `field`:必填，查询条件中类对应的属性
+* `column`：对应的表字段
+* `test`：动态SQL的判断表达式
+
+`@Page`只能用在ModelConditions下的查询，并且方法参数的那个类应该有`offset`，`limit`这两个属性，或者 使用`@Page(offsetField = "offset",limitField = "limit")`指定具体字段
+#### 统计
+```
+@Count
+void count(DataHandler<Integer> handler);//返回Long类型
+```
+#### 插入
+```
+@Insert(useGeneratedKeys = true, keyProperty = "id")//返回自增id
+void insert(User user, DataHandler<Long> handler);
+```
+#### 更新
+```
+@Update(columns = "username,age")//选择更新某几个列
+void update(User user, DataHandler<Long> handler);//返回affectedRows
+```
+#### 删除
+```
+@Delete
+int delete(@Condition(criterion = Criterions.GREATER, column = "age") int min,
+          @Condition(criterion = Criterions.LESS, column = "age") int max,
+          DataHandler<Long> handler);
+
+@Delete
+@ModelConditions(@ModelCondition(field = "id"))
+void delete(User user, DataHandler<Long> handler);
+```
+### 使用
+简单的编程使用
 
 ```
 AsyncConfig asyncConfig = new AsyncConfig();
-PoolConfiguration configuration = new PoolConfiguration("root", "localhost", 3306, "admin", "test");
+PoolConfiguration configuration = new PoolConfiguration("root", "localhost", 3306, "password", "database-name");
 asyncConfig.setPoolConfiguration(configuration);
 asyncConfig.setMapperPackages("com.tg.async.mapper");//mapper接口
 asyncConfig.setXmlLocations("/mapper");//xml目录
 AsyncDaoFactory asyncDaoFactory = AsyncDaoFactory.build(asyncConfig);
 CommonDao commonDao = asyncDaoFactory.getMapper(CommonDao.class);
    
-User user = new User();
-user.setUsername("ha");
-user.setAge(10);
+UserSearch userSearch = new UserSearch();
+userSearch.setUsername("ha");
+userSearch.setMaxAge(28);
+userSearch.setMinAge(8);
+userSearch.setLimit(5);
 CountDownLatch latch = new CountDownLatch(1);
 commonDao.query(user, users -> {
   System.out.println(users);
