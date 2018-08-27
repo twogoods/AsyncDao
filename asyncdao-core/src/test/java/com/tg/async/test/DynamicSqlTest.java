@@ -19,7 +19,7 @@ public class DynamicSqlTest {
     public void query() throws Exception {
         Configuration configuration = new Configuration();
         XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(configuration,
-                ResourceScanner.getResourceAsStream("CommonDaoMapper.xml"), "CommonDaoMapper.xml");
+                ResourceScanner.getResourceAsStream("mapper/CommonDaoMapper.xml"), "mapper/CommonDaoMapper.xml");
         xmlMapperBuilder.build();
 
         MappedStatement mappedStatement = configuration.getMappedStatement("com.tg.async.mapper.CommonDao.query");
@@ -39,7 +39,7 @@ public class DynamicSqlTest {
     @Test
     public void insert() throws Exception {
         Configuration configuration = new Configuration();
-        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(configuration, ResourceScanner.getResourceAsStream("CommonDaoMapper.xml"), "CommonDaoMapper.xml");
+        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(configuration, ResourceScanner.getResourceAsStream("mapper/CommonDaoMapper.xml"), "mapper/CommonDaoMapper.xml");
         xmlMapperBuilder.build();
         MappedStatement mappedStatement = configuration.getMappedStatement("com.tg.async.mapper.CommonDao.insert");
 

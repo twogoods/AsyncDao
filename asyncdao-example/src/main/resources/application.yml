@@ -1,0 +1,16 @@
+async:
+    dao:
+     mapperLocations:
+     basePackage: com.tg.mapper
+     username: root
+     host: localhost
+     port: 3663
+     password: admin
+     database: test
+     maxTotal: 12
+     maxIdle: 12
+     minIdle: 1
+     maxWaitMillis: 10000
+
+
+

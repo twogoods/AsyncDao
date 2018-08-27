@@ -11,6 +11,7 @@
     <modules>
         <module>asyncdao-core</module>
         <module>asyncdao-spring</module>
+        <module>example</module>
     </modules>
 
 

@@ -27,8 +27,8 @@ public class MapperLoader {
     }
 
     private void parseXmlMapper(String path) throws Exception {
-        if (path == null) {
-            log.warn("XmlLocations is null, check config");
+        if (StringUtils.isEmpty(path)) {
+            log.warn("XmlLocations is empty, check config");
             return;
         }
         Set<String> files = ResourceScanner.getXml(Arrays.asList(path.split(",")));

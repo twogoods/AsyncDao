@@ -12,7 +12,7 @@ public class XmlText {
 
     @Test
     public void test() throws Exception {
-        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(new Configuration(), ResourceScanner.getResourceAsStream("CommonDaoMapper.xml"), "CommonDaoMapper.xml");
+        XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(new Configuration(), ResourceScanner.getResourceAsStream("mapper/CommonDaoMapper.xml"), "mapper/CommonDaoMapper.xml");
         xmlMapperBuilder.build();
     }
 }

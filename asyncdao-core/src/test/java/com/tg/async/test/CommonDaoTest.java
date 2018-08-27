@@ -26,7 +26,7 @@ public class CommonDaoTest {
         PoolConfiguration configuration = new PoolConfiguration("root", "localhost", 3306, "admin", "test");
         asyncConfig.setPoolConfiguration(configuration);
         asyncConfig.setMapperPackages("com.tg.async.mapper");
-        asyncConfig.setXmlLocations("");
+        asyncConfig.setXmlLocations("/mapper");
         AsyncDaoFactory asyncDaoFactory = AsyncDaoFactory.build(asyncConfig);
         commonDao = asyncDaoFactory.getMapper(CommonDao.class);
     }

@@ -12,4 +12,24 @@
     <artifactId>asyncdao-spring</artifactId>
 
 
+    <dependencies>
+        <dependency>
+            <groupId>com.github.twogoods</groupId>
+            <artifactId>asyncdao-core</artifactId>
+            <version>0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <version>1.4.1.RELEASE</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+
 </project>

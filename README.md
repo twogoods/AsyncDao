@@ -251,3 +251,32 @@ commonDao.query(user, users -> {
 latch.await();
                 
 ```
+
+## 事务
+Mybatis和Spring体系里有一个非常好用的`@Translactional`注解，我们知道事务本质就是依赖connection的rollback等操作，那么一个事务下多个SQL就要共用这一个connection,如何共享呢？传统的阻塞体系下ThreadLocal就成了实现这一点的完美解决方案。那么在异步世界里，要实现mybatis-spring一样的上层Api来完成事务操作是一件非常困难的事，难点就在于Api太上层，以至于无法实现connection共享。于是这里自能退而求其次，使用编程式的方式来使用事务，抽象出一个`Translaction`具体的dao通过`translaction.getMapper()`来获取，这样通过同一个`Translaction`得到的Mapper都将共用一个connection
+
+```
+CountDownLatch latch = new CountDownLatch(1);
+AsyncConfig asyncConfig = new AsyncConfig();
+PoolConfiguration configuration = new PoolConfiguration("root", "localhost", 3306, "admin", "test");
+asyncConfig.setPoolConfiguration(configuration);
+asyncConfig.setMapperPackages("com.tg.async.mapper");
+asyncConfig.setXmlLocations("");
+asyncDaoFactory = AsyncDaoFactory.build(asyncConfig);
+asyncDaoFactory.startTranslation(res -> {
+    Translaction translaction = res.result();
+    System.out.println(translaction);
+    CommonDao commonDao = translaction.getMapper(CommonDao.class);
+    User user = new User();
+    user.setUsername("insert");
+    user.setPassword("1234");
+    user.setAge(28);
+    commonDao.insert(user, id -> {
+        System.out.println(id);
+        translaction.rollback(Void -> {
+            latch.countDown();
+        });
+    });
+});
+latch.await();
+```
