@@ -14,8 +14,9 @@ import com.tg.async.utils.DataConverter;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -29,9 +30,8 @@ import java.util.Map;
 /**
  * Created by twogoods on 2018/4/12.
  */
-@Slf4j
 public class MapperProxy<T> implements InvocationHandler {
-
+    private static final Logger log = LoggerFactory.getLogger(MapperProxy.class);
     private Configuration configuration;
     private Class<T> mapperInterface;
 
@@ -50,6 +50,9 @@ public class MapperProxy<T> implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (Object.class.equals(method.getDeclaringClass())) {
+            return method.invoke(this, args);
+        }
         if (isDefaultMethod(method)) {
             return invokeDefaultMethod(proxy, method, args);
         }
@@ -85,7 +88,6 @@ public class MapperProxy<T> implements InvocationHandler {
     private interface ExcuteSQLhandle {
         void handle(MapperMethod mapperMethod, QueryResult queryResult, ModelMap resultMap, DataHandler dataHandler);
     }
-
 
     private abstract class BaseSQLhandle implements ExcuteSQLhandle {
         protected void handleReturnData(MapperMethod mapperMethod, DataHandler dataHandler, long count, boolean key) {
@@ -160,7 +162,6 @@ public class MapperProxy<T> implements InvocationHandler {
     private class UpdateHandle extends BaseSQLhandle {
         @Override
         public void handle(MapperMethod mapperMethod, QueryResult queryResult, ModelMap resultMap, DataHandler dataHandler) {
-            MappedStatement mappedStatement = configuration.getMappedStatement(mapperMethod.getName());
             handleReturnData(mapperMethod, dataHandler, queryResult.rowsAffected(), false);
         }
 
@@ -173,7 +174,6 @@ public class MapperProxy<T> implements InvocationHandler {
     private class DeleteHandle extends BaseSQLhandle {
         @Override
         public void handle(MapperMethod mapperMethod, QueryResult queryResult, ModelMap resultMap, DataHandler dataHandler) {
-            MappedStatement mappedStatement = configuration.getMappedStatement(mapperMethod.getName());
             handleReturnData(mapperMethod, dataHandler, queryResult.rowsAffected(), false);
         }
 
@@ -185,46 +185,35 @@ public class MapperProxy<T> implements InvocationHandler {
 
 
     protected void getConnection(Handler<AsyncResult<SQLConnection>> handler) {
-        configuration.getConnectionPool().getConnection(res -> handler.handle(Future.succeededFuture(res.result())));
+        configuration.getConnectionPool().getConnection(res -> {
+            if (res.succeeded()) {
+                handler.handle(Future.succeededFuture(res.result()));
+            } else {
+                log.error("get connection error", res.cause());
+            }
+        });
     }
 
 
     private void execute(MapperMethod mapperMethod, MappedStatement mappedStatement, Object[] args, DataHandler dataHandler, ExcuteSQLhandle excuteSQLhandle) {
         BoundSql boundSql = mappedStatement.getSqlSource().getBoundSql(convertArgs(mapperMethod, args));
-        log.debug("sql : {}", boundSql);
         getConnection(asyncConnection -> {
             SQLConnection connection = asyncConnection.result();
-//            connection.queryWithParams(boundSql.getSql(), boundSql.getParameters(), new Handler<AsyncResult<QueryResult>>() {
-//                @Override
-//                public void handle(AsyncResult<QueryResult> asyncResult) {
-//                    if (asyncResult.succeeded()) {
-//                        QueryResult queryResult = asyncResult.result();
-//                        ModelMap resultMap;
-//                        if (StringUtils.isEmpty(mappedStatement.getResultMap())) {
-//                            resultMap = configuration.getModelMap(mappedStatement.getResultType());
-//                        } else {
-//                            resultMap = configuration.getModelMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
-//                        }
-//                        excuteSQLhandle.handle(mapperMethod, queryResult, resultMap, dataHandler);
-//                    } else {
-//                        log.error("execute sql error {}", asyncResult.cause());
-//                    }
-//                }
-//            });
-            connection.queryWithParams(boundSql.getSql(), boundSql.getParameters(), qr->{
-                    if (qr.succeeded()) {
-                        QueryResult queryResult = qr.result();
-                        ModelMap resultMap;
-                        if (StringUtils.isEmpty(mappedStatement.getResultMap())) {
-                            resultMap = configuration.getModelMap(mappedStatement.getResultType());
+            log.debug("sql : {}", boundSql);
+            connection.queryWithParams(boundSql.getSql(), boundSql.getParameters(), qr -> {
+                        if (qr.succeeded()) {
+                            QueryResult queryResult = qr.result();
+                            ModelMap resultMap;
+                            if (StringUtils.isEmpty(mappedStatement.getResultMap())) {
+                                resultMap = configuration.getModelMap(mappedStatement.getResultType());
+                            } else {
+                                resultMap = configuration.getModelMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
+                            }
+                            excuteSQLhandle.handle(mapperMethod, queryResult, resultMap, dataHandler);
                         } else {
-                            resultMap = configuration.getModelMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
+                            log.error("execute sql error !", qr.cause());
                         }
-                        excuteSQLhandle.handle(mapperMethod, queryResult, resultMap, dataHandler);
-                    } else {
-                        log.error("execute sql error {}", qr.cause());
                     }
-                }
             );
         });
     }

@@ -49,6 +49,12 @@ public class BaseSqlTest {
         System.out.println(connection.isConnected());
 
         connection.connect().onComplete(ScalaUtils.toFunction1(asyncResult -> {
+
+            if(asyncResult.failed()){
+                asyncResult.cause().printStackTrace();
+                latch.countDown();
+            }
+
             Future<QueryResult> qr = asyncResult.result().sendQuery("insert into T_User(username) values('twogoods')");
             qr.onComplete(ScalaUtils.toFunction1(ar -> {
                 if (ar.succeeded()) {
@@ -60,7 +66,6 @@ public class BaseSqlTest {
                     queryResult.rows().get().foreach(new AbstractFunction1<RowData, Void>() {
                         @Override
                         public Void apply(RowData row) {
-
                             row.foreach(new AbstractFunction1<Object, Void>() {
                                 @Override
                                 public Void apply(Object value) {

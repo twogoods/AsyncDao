@@ -1,10 +1,10 @@
 async:
     dao:
-     mapperLocations:
-     basePackage: com.tg.mapper
+     mapperLocations: /mapper
+     basePackages: com.tg.mapper
      username: root
      host: localhost
-     port: 3663
+     port: 3306
      password: admin
      database: test
      maxTotal: 12

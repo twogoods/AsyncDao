@@ -4,7 +4,6 @@ import com.tg.async.exception.MethodDefinitionException;
 import com.tg.async.exception.UnsupportTypeException;
 import lombok.Data;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -17,7 +16,6 @@ import java.util.stream.Collectors;
  */
 @Data
 @ToString
-@Slf4j
 public class MapperMethod {
     private Class iface;
     private Method method;

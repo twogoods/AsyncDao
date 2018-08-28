@@ -12,7 +12,6 @@ public class Translaction {
     private Configuration configuration;
     private SQLConnection connection;
 
-
     public Translaction(Configuration configuration, SQLConnection connection) {
         this.configuration = configuration;
         this.connection = connection;
@@ -21,7 +20,6 @@ public class Translaction {
     public <T> T getMapper(Class<T> type) {
         return new MapperProxyFactory<T>(type).newInstance(configuration, connection);
     }
-
 
     public void rollback(Handler<AsyncResult<Void>> handler) {
         connection.rollback(handler);

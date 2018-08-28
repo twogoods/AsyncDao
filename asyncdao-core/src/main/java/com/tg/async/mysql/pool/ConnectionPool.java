@@ -55,7 +55,11 @@ public class ConnectionPool {
             handler.handle(Future.succeededFuture(new AsyncSQLConnectionImpl(connection, this, executionContext)));
         } else {
             connection.connect().onComplete(ScalaUtils.toFunction1(asyncResult -> {
-                handler.handle(Future.succeededFuture(new AsyncSQLConnectionImpl(asyncResult.result(), this, executionContext)));
+                if (asyncResult.failed()) {
+                    handler.handle(Future.failedFuture(asyncResult.cause()));
+                } else {
+                    handler.handle(Future.succeededFuture(new AsyncSQLConnectionImpl(asyncResult.result(), this, executionContext)));
+                }
             }), executionContext);
         }
     }

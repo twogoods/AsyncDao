@@ -11,9 +11,7 @@
     <modules>
         <module>asyncdao-core</module>
         <module>asyncdao-spring</module>
-        <module>example</module>
     </modules>
-
 
     <properties>
         <java.version>1.8</java.version>
@@ -30,7 +28,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.21</version>
-            <!--<scope>provided</scope>-->
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

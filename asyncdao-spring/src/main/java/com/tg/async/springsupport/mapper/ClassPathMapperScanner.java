@@ -1,6 +1,7 @@
 package com.tg.async.springsupport.mapper;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -17,8 +18,8 @@ import java.util.Set;
 /**
  * Created by twogoods on 2018/8/27.
  */
-@Slf4j
 public class ClassPathMapperScanner extends ClassPathBeanDefinitionScanner {
+    private static final Logger log = LoggerFactory.getLogger(ClassPathMapperScanner.class);
 
     private Class<? extends Annotation> annotationClass;
 

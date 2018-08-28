@@ -1,15 +1,15 @@
 package com.tg.async.springsupport.mapper;
 
 import com.tg.async.mysql.AsyncDaoFactory;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
  * Created by twogoods on 2018/8/27.
  */
-@Slf4j
 public class MapperFactoryBean<T> implements FactoryBean<T> {
-
+    private static final Logger log = LoggerFactory.getLogger(MapperFactoryBean.class);
     private Class<T> mapperInterface;
     private AsyncDaoFactory asyncDaoFactory;
 
@@ -22,7 +22,6 @@ public class MapperFactoryBean<T> implements FactoryBean<T> {
 
     @Override
     public T getObject() throws Exception {
-        System.out.println("asyncDaoFactory: " + asyncDaoFactory + "   interface:" + mapperInterface);
         log.debug("init {} proxy instance", mapperInterface);
         return asyncDaoFactory.getMapper(this.mapperInterface);
     }

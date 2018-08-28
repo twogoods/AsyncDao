@@ -25,7 +25,7 @@ public class AsyncDaoAutoConfiguration {
         AsyncConfig asyncConfig = new AsyncConfig();
         PoolConfiguration configuration = new PoolConfiguration(asyncDaoConfig.getUsername(), asyncDaoConfig.getHost(), asyncDaoConfig.getPort(), asyncDaoConfig.getPassword(), asyncDaoConfig.getDatabase());
         asyncConfig.setPoolConfiguration(configuration);
-        asyncConfig.setMapperPackages(asyncDaoConfig.getBasePackage());
+        asyncConfig.setMapperPackages(asyncDaoConfig.getBasePackages());
         asyncConfig.setXmlLocations(asyncDaoConfig.getMapperLocations());
         return AsyncDaoFactory.build(asyncConfig);
     }

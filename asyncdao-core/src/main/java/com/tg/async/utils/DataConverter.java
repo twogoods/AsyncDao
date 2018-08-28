@@ -3,24 +3,28 @@ package com.tg.async.utils;
 import com.github.mauricio.async.db.QueryResult;
 import com.github.mauricio.async.db.ResultSet;
 import com.github.mauricio.async.db.RowData;
-import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.dynamic.mapping.ColumnMapping;
+import com.tg.async.dynamic.mapping.ModelMap;
 import com.tg.async.exception.ParseException;
 import com.tg.async.mysql.ScalaUtils;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.Option;
 import scala.collection.Iterator;
 import scala.runtime.AbstractFunction1;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by twogoods on 2018/5/2.
  */
-@Slf4j
 public class DataConverter {
+    private static final Logger log = LoggerFactory.getLogger(DataConverter.class);
     private static Map<Class, Map<String, PropertyDescriptor>> classesWithProperty = new ConcurrentHashMap<>();
 
     public static <T> List<T> queryResultToListObject(QueryResult queryResult, Class<T> clazz, ModelMap resultMap) {

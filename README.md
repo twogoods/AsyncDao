@@ -3,7 +3,8 @@ asyncDao是一款异步非阻塞模型下的数据访问层工具。
 * MySQL only. 基于MySQL的[异步驱动](https://github.com/mauricio/postgresql-async)
 * 借鉴了Mybatis的mapping 和 dynamicSQL的内容，Mybatiser可以无缝切换
 * 注解表达SQL的能力
-* 事务支持（**待完成**）
+* 事务支持
+* SpringBoot支持
 
 ### Mybatis like
 使用上与Mybatis几乎一致，由于异步非阻塞的关系，数据的返回都会通过回调DataHandler来完成，所以方法定义参数的最后一个一定是DataHandler类型
@@ -231,10 +232,10 @@ void delete(User user, DataHandler<Long> handler);
 
 ```
 AsyncConfig asyncConfig = new AsyncConfig();
-PoolConfiguration configuration = new PoolConfiguration("root", "localhost", 3306, "password", "database-name");
+PoolConfiguration configuration = new PoolConfiguration("username", "localhost", 3306, "password", "database-name");
 asyncConfig.setPoolConfiguration(configuration);
 asyncConfig.setMapperPackages("com.tg.async.mapper");//mapper接口
-asyncConfig.setXmlLocations("/mapper");//xml目录
+asyncConfig.setXmlLocations("mapper/");//xml目录,classpath的相对路径,不支持绝对路径
 AsyncDaoFactory asyncDaoFactory = AsyncDaoFactory.build(asyncConfig);
 CommonDao commonDao = asyncDaoFactory.getMapper(CommonDao.class);
    
@@ -253,15 +254,15 @@ latch.await();
 ```
 
 ## 事务
-Mybatis和Spring体系里有一个非常好用的`@Translactional`注解，我们知道事务本质就是依赖connection的rollback等操作，那么一个事务下多个SQL就要共用这一个connection,如何共享呢？传统的阻塞体系下ThreadLocal就成了实现这一点的完美解决方案。那么在异步世界里，要实现mybatis-spring一样的上层Api来完成事务操作是一件非常困难的事，难点就在于Api太上层，以至于无法实现connection共享。于是这里自能退而求其次，使用编程式的方式来使用事务，抽象出一个`Translaction`具体的dao通过`translaction.getMapper()`来获取，这样通过同一个`Translaction`得到的Mapper都将共用一个connection
+Mybatis和Spring体系里有一个非常好用的`@Translactional`注解，我们知道事务本质就是依赖connection的rollback等操作，那么一个事务下多个SQL就要共用这一个connection，如何共享呢？传统的阻塞体系下ThreadLocal就成了实现这一点的完美解决方案。那么在异步世界里，要实现mybatis-spring一样的上层Api来完成事务操作是一件非常困难的事，难点就在于Api太上层，以至于无法实现connection共享。于是这里自能退而求其次，使用编程式的方式来使用事务，抽象出一个`Translaction`，具体的mapper通过`translaction.getMapper()`来获取，这样通过同一个`Translaction`得到的Mapper都将共用一个connection。
 
 ```
 CountDownLatch latch = new CountDownLatch(1);
 AsyncConfig asyncConfig = new AsyncConfig();
-PoolConfiguration configuration = new PoolConfiguration("root", "localhost", 3306, "admin", "test");
+PoolConfiguration configuration = new PoolConfiguration("username", "localhost", 3306, "password", "database-name");
 asyncConfig.setPoolConfiguration(configuration);
 asyncConfig.setMapperPackages("com.tg.async.mapper");
-asyncConfig.setXmlLocations("");
+asyncConfig.setXmlLocations("mapper/");
 asyncDaoFactory = AsyncDaoFactory.build(asyncConfig);
 asyncDaoFactory.startTranslation(res -> {
     Translaction translaction = res.result();
@@ -279,4 +280,65 @@ asyncDaoFactory.startTranslation(res -> {
     });
 });
 latch.await();
+```
+
+## SpringBoot
+虽然Spring5推出了WebFlux，但异步体系在Spring里依旧不是主流。在异步化改造的过程中，大部分人也往往会保留Spring的IOC，而将其他交给Vertx，所以asyncDao对于Spring的支持就是将Mapper注入IOC容器。
+### quick start
+YAML配置文件：
+
+```
+async:
+    dao:
+     mapperLocations: /mapper  #xml目录,classpath的相对路径,不支持绝对路径
+     basePackages: com.tg.mapper #mapper所在包
+     username: username
+     host: localhost
+     port: 3306
+     password: pass
+     database: database-name
+     maxTotal: 12
+     maxIdle: 12
+     minIdle: 1
+     maxWaitMillis: 10000
+```
+添加`@Mapper`来实现注入
+
+```
+@Mapper
+@Sql(User.class)
+public interface CommonDao {
+    @Select(columns = "id,age,username")
+    @OrderBy("id desc")
+    @Page(offsetField = "offset", limitField = "limit")
+    @ModelConditions({
+            @ModelCondition(field = "username", criterion = Criterions.EQUAL),
+            @ModelCondition(field = "maxAge", column = "age", criterion = Criterions.LESS),
+            @ModelCondition(field = "minAge", column = "age", criterion = Criterions.GREATER)
+    })
+    void query(UserSearch userSearch, DataHandler<List<User>> handler);
+}
+```
+通过`@EnableAsyncDao`来开启支持，简单示例：
+
+```
+@SpringBootApplication
+@EnableAsyncDao
+public class DemoApplication {
+
+    public static void main(String[] args){
+        ApplicationContext applicationContext = SpringApplication.run(DemoApplication.class);
+        CommonDao commonDao = applicationContext.getBean(CommonDao.class);
+
+        UserSearch userSearch = new UserSearch();
+        userSearch.setUsername("ha");
+        userSearch.setMaxAge(28);
+        userSearch.setMinAge(8);
+        userSearch.setLimit(5);
+
+        commonDao.query(userSearch, users -> {
+            System.out.println("result: " + users);
+        });
+    }
+}
 ```

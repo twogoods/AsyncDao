@@ -13,7 +13,7 @@ public class AsyncDaoConfig {
 
     private String mapperLocations;
 
-    private String basePackage;
+    private String basePackages;
 
     private String username;
 

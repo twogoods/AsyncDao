@@ -1,9 +1,10 @@
 package com.tg.async.utils;
 
-import lombok.extern.slf4j.Slf4j;
+import com.tg.async.mysql.MapperLoader;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -13,8 +14,8 @@ import static java.util.Locale.ENGLISH;
 /**
  * Created by twogoods on 2018/5/2.
  */
-@Slf4j
 public class PropertyDescriptor {
+    private static final Logger log = LoggerFactory.getLogger(MapperLoader.class);
     private Class clazz;
     private String name;
     private Class type;
@@ -31,7 +32,6 @@ public class PropertyDescriptor {
         }
     }
 
-
     public void setValue(Object object, Object value) throws Exception {
         try {
             setter.invoke(object, new Object[]{value});
@@ -40,19 +40,16 @@ public class PropertyDescriptor {
         }
     }
 
-
     //TODO mysql类型与返回参数类型,先按异步驱动自己的规定
     private Object convertValue(Object value) {
         if (value.getClass().equals(LocalDateTime.class)) {
             return Timestamp.valueOf((LocalDateTime) value);
         }
-
         if (value.getClass().equals(LocalDate.class)) {
             return ((LocalDate) value).toDate();
         }
         return value;
     }
-
 
     private String getSetterName() {
         if (name == null || name.length() == 0) {
