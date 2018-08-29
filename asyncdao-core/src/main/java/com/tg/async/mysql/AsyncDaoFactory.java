@@ -43,9 +43,7 @@ public class AsyncDaoFactory {
         configuration.getConnectionPool().getConnection(res -> {
             if (res.succeeded()) {
                 SQLConnection connection = res.result();
-                connection.setAutoCommit(false, Void -> {
-                    handler.handle(Future.succeededFuture(new Translaction(configuration, res.result())));
-                });
+                connection.setAutoCommit(false, Void -> handler.handle(Future.succeededFuture(new Translaction(configuration, res.result()))));
             } else {
                 log.error("start translation failed", res.cause());
                 Future.failedFuture(res.cause());

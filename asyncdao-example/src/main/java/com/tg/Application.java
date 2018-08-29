@@ -24,10 +24,6 @@ public class Application {
         userSearch.setMinAge(8);
         userSearch.setLimit(5);
 
-        commonDao.queryList(new int[]{1, 2}, users -> {
-            System.out.println("result: " + users);
-        });
-
         commonDao.query(userSearch, users -> {
             System.out.println("result: " + users);
         });

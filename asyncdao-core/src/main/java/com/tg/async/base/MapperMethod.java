@@ -67,6 +67,11 @@ public class MapperMethod {
                     throw new UnsupportTypeException(String.format("not support type : %s", dataContinerType));
                 }
             } else if (handlerWrapperType instanceof Class) {
+                if(handlerWrapperType.equals(Map.class)){
+                    wrapper = HashMap.class;
+                    returnsMap = true;
+                    return;
+                }
                 primary = (Class) handlerWrapperType;
                 if (primary.equals(Void.class)) {
                     returnsVoid = true;

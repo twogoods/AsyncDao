@@ -7,7 +7,7 @@ asyncDao是一款异步非阻塞模型下的数据访问层工具。
 * SpringBoot支持
 
 ### Mybatis like
-使用上与Mybatis几乎一致，由于异步非阻塞的关系，数据的返回都会通过回调DataHandler来完成，所以方法定义参数的最后一个一定是DataHandler类型
+使用上与Mybatis几乎一致，由于异步非阻塞的关系，数据的返回都会通过回调DataHandler来完成，所以方法定义参数的最后一个一定是DataHandler类型。由于需要提取方法的参数名，于是需要加上编译参数`-parameters`，请将它在IDE和maven里配置上。
 
 ```
 public interface CommonDao {
@@ -25,7 +25,7 @@ public interface CommonDao {
     void delete(User user,DataHandler<Long> handler);
 }
 ```
-mapper.xml与Mybatis几乎一致的写法
+mapper.xml与Mybatis几乎一致的写法(覆盖常见标签，一些不常用标签可能不支持，动态SQL建议使用注解SQL功能)
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -94,6 +94,7 @@ mapper.xml与Mybatis几乎一致的写法
 public class User {
     @Id("id")
     private Long id;
+    //建议全部用包装类型，并注意mysql中字段类型与java类型的对应关系，mysql的int不会自动装换到这里的long
 
     private String username;
     private Integer age;

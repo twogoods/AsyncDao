@@ -205,7 +205,7 @@ public class MapperProxy<T> implements InvocationHandler {
                             QueryResult queryResult = qr.result();
                             ModelMap resultMap;
                             if (StringUtils.isEmpty(mappedStatement.getResultMap())) {
-                                resultMap = configuration.getModelMap(mappedStatement.getResultType());
+                                resultMap = configuration.getModelMap(mapperMethod.getIface().getName());
                             } else {
                                 resultMap = configuration.getModelMap(mapperMethod.getIface().getName() + "." + mappedStatement.getResultMap());
                             }

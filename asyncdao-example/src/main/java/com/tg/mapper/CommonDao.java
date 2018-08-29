@@ -55,7 +55,7 @@ public interface CommonDao {
     void querySingleColumn(DataHandler<List<Long>> handler);
 
     @Count
-    void count(DataHandler<Integer> handler);
+    void count(DataHandler<Long> handler);
 
     //@Insert(useGeneratedKeys = true, keyProperty = "id")
     void insert(User user, DataHandler<Long> handler);

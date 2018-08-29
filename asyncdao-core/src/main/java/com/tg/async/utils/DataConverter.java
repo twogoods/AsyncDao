@@ -65,15 +65,14 @@ public class DataConverter {
 
     public static Map<String, Object> queryResultToMap(QueryResult queryResult, ModelMap resultMap) {
         final Option<ResultSet> rows = queryResult.rows();
-        Map<String, Object> map = new HashMap<>();
         if (rows.isDefined()) {
             List<String> columnNames = ScalaUtils.toJavaList(rows.get().columnNames().toList());
             Iterator<RowData> iterator = rows.get().iterator();
             if (iterator.hasNext()) {
-                rowDataToMap(iterator.next(), resultMap, columnNames);
+                return rowDataToMap(iterator.next(), resultMap, columnNames);
             }
         }
-        return map;
+        return new HashMap<>();
     }
 
     public static Map<String, Object> rowDataToMap(RowData rowData, ModelMap resultMap, List<String> columnNames) {

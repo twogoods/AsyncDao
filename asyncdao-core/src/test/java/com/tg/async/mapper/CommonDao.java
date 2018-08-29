@@ -22,7 +22,7 @@ public interface CommonDao {
      * <p>
      * 参考：dbutils mybatis ognl
      */
-    @Select(columns = "id,age,username")
+    @Select()
     @OrderBy("id desc")
     @Page(offsetField = "offset", limitField = "limit")
     @ModelConditions({
@@ -33,7 +33,7 @@ public interface CommonDao {
     void query(UserSearch userSearch, DataHandler<List<User>> handler);
 
 
-    @Select(columns = "age,username")
+    @Select()
     @OrderBy("id desc")
     void queryParam(@Condition String username,
                     @Condition(criterion = Criterions.GREATER) Integer age,
@@ -53,9 +53,9 @@ public interface CommonDao {
     void querySingleColumn(DataHandler<List<Long>> handler);
 
     @Count
-    void count(DataHandler<Integer> handler);
+    void count(DataHandler<Long> handler);
 
-    //@Insert(useGeneratedKeys = true, keyProperty = "id")
+    @Insert(useGeneratedKeys = true, keyProperty = "id")
     void insert(User user, DataHandler<Long> handler);
 
     @Update
